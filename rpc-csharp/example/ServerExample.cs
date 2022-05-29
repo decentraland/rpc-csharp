@@ -1,0 +1,52 @@
+using rpc_csharp.transport;
+using WebSocketSharp.Server;
+
+namespace rpc_csharp.example;
+
+
+public class ServerExample
+{
+    public static void run()
+    {
+        Console.Write("> Creating server");
+        var url = $"ws://localhost:{8080}/";
+        WebSocketServer wss = new WebSocketServer(url);
+
+        RpcServer rpcServer = new RpcServer();
+        
+        wss.AddWebSocketService<WebSocketService>("/", (() =>
+        {
+            var transport = new WebSocketTransport();
+            Console.Write("> Create transport");
+            rpcServer.AttachTransport(transport);
+            return transport.GetService();
+        }));
+        
+        wss.Start();
+
+/*
+
+  console.log("> Creating server")
+  const rpcServer = createRpcServer<TestContext>({})
+  // the handler function will be called every time a port is created.
+  // it should register the available APIs/Modules for the specified port
+  rpcServer.setHandler(async function handler(port) {
+    console.log("  Creating server port: " + port.portName)
+    registerBookServiceServerImplementation(port)
+  })
+
+  console.log("> Creating client and server MemoryTransport")
+  const wss = new WebSocketServer({ port: 8080 })
+  wss.on('connection', function connection(ws: any, req: any) {
+    const serverSocket = WebSocketTransport(ws)
+
+    // connect the "socket" to the server
+    console.log("> Attaching transport")
+    rpcServer.attachTransport(serverSocket, context)
+
+    wss.close()
+  })
+
+*/
+    }
+}
