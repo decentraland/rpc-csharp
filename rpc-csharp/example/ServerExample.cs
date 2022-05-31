@@ -1,28 +1,28 @@
+using System;
 using rpc_csharp.transport;
 using WebSocketSharp.Server;
 
-namespace rpc_csharp.example;
-
-
-public class ServerExample
+namespace rpc_csharp.example
 {
-    public static void run()
+    public class ServerExample
     {
-        Console.Write("> Creating server");
-        var url = $"ws://localhost:{8080}/";
-        WebSocketServer wss = new WebSocketServer(url);
-
-        RpcServer rpcServer = new RpcServer();
-        
-        wss.AddWebSocketService<WebSocketService>("/", (() =>
+        public static void run()
         {
-            var transport = new WebSocketTransport();
-            Console.Write("> Create transport");
-            rpcServer.AttachTransport(transport);
-            return transport.GetService();
-        }));
-        
-        wss.Start();
+            Console.Write("> Creating server");
+            var url = $"ws://localhost:{8080}/";
+            WebSocketServer wss = new WebSocketServer(url);
+
+            RpcServer rpcServer = new RpcServer();
+
+            wss.AddWebSocketService<WebSocketService>("/", (() =>
+            {
+                var transport = new WebSocketTransport();
+                Console.Write("> Create transport");
+                rpcServer.AttachTransport(transport);
+                return transport.GetService();
+            }));
+
+            wss.Start();
 
 /*
 
@@ -48,5 +48,6 @@ public class ServerExample
   })
 
 */
+        }
     }
 }

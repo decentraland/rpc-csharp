@@ -1,18 +1,21 @@
-namespace rpc_csharp.transport;
+using System;
 
-public interface ITransport
+namespace rpc_csharp.transport
 {
-    // Functions
-    void SendMessage(byte[] data);
+    public interface ITransport
+    {
+        // Functions
+        void SendMessage(byte[] data);
 
-    void Close();
-    
-    // Events
-    event Action OnClose;
+        void Close();
 
-    event Action<string> OnError;
+        // Events
+        event Action OnClose;
 
-    event Action<byte[]> OnMessage;
+        event Action<string> OnError;
 
-    event Action OnConnect; 
+        event Action<byte[]> OnMessage;
+
+        event Action OnConnect;
+    }
 }

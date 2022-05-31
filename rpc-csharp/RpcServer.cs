@@ -1,36 +1,35 @@
+using System;
 using ProtoBuf;
 using rpc_csharp.protocol;
 using rpc_csharp.transport;
 
-namespace rpc_csharp;
-
-public class RpcServer
+namespace rpc_csharp
 {
-    private ITransport? transport;
-    
-    public RpcServer()
+    public class RpcServer
     {
-        
-    }
+        private ITransport? transport;
 
-    public void AttachTransport(ITransport newTransport/*, context */)
-    {
-        transport = newTransport;
-        
-        transport.OnMessage += (byte[] data) =>
+        public RpcServer()
         {
-            var reader = ProtoReader.State.Create(data, null);
-            
-            var parsedMessage = ProtocolHelpers.ParseProtocolMessage(reader);
+        }
 
-            if (parsedMessage != null)
+        public void AttachTransport(ITransport newTransport /*, context */)
+        {
+            transport = newTransport;
+
+            transport.OnMessage += (byte[] data) =>
             {
-                var (messageType, message, messageNumber) = parsedMessage.Value;
-            }
+                var reader = ProtoReader.State.Create(data, null);
 
-            //var key = $"{messageNumber},{header}";
-            
-            Console.WriteLine("MessageNumber: " + messageNumber);
-        };
+                var parsedMessage = ProtocolHelpers.ParseProtocolMessage(reader);
+
+                if (parsedMessage != null)
+                {
+                    var (messageType, message, messageNumber) = parsedMessage.Value;
+                    //var key = $"{messageNumber},{header}";
+                    Console.WriteLine("MessageNumber: " + messageNumber);
+                }
+            };
+        }
     }
 }

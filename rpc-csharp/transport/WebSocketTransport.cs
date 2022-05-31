@@ -1,54 +1,53 @@
-using System.Diagnostics;
-using WebSocketSharp;
-using WebSocketSharp.Server;
-using WebSocket = WebSocketSharp.WebSocket;
+using System;
 
-namespace rpc_csharp.transport;
-
-public sealed class WebSocketTransport : ITransport, WebSocketEvents
+namespace rpc_csharp.transport
 {
-    private WebSocketService service;
-    public event Action? OnClose;
-    public event Action<string>? OnError;
-    public event Action<byte[]>? OnMessage;
-    public event Action? OnConnect;
-    public WebSocketTransport()
+    public sealed class WebSocketTransport : ITransport, WebSocketEvents
     {
-        service = new WebSocketService(this);
-    }
+        private WebSocketService service;
+        public event Action OnClose;
+        public event Action<string> OnError;
+        public event Action<byte[]> OnMessage;
+        public event Action OnConnect;
 
-    public WebSocketService GetService()
-    {
-        return service;
-    }
+        public WebSocketTransport()
+        {
+            service = new WebSocketService(this);
+        }
 
-    public void SendMessage(byte[] data)
-    {
-        service.SendMessage(data);
-    }
+        public WebSocketService GetService()
+        {
+            return service;
+        }
 
-    public void Close()
-    {
-        service.Close();
-    }
+        public void SendMessage(byte[] data)
+        {
+            service.SendMessage(data);
+        }
 
-    public void OnConnectHandler()
-    {
-        OnConnect?.Invoke();
-    }
+        public void Close()
+        {
+            service.Close();
+        }
 
-    public void OnMessageHandler(byte[] data)
-    {
-        OnMessage?.Invoke(data);
-    }
+        public void OnConnectHandler()
+        {
+            OnConnect?.Invoke();
+        }
 
-    public void OnErrorHandler(string error)
-    {
-        OnError?.Invoke(error);
-    }
+        public void OnMessageHandler(byte[] data)
+        {
+            OnMessage?.Invoke(data);
+        }
 
-    public void OnCloseHandler()
-    {
-        OnClose?.Invoke();
+        public void OnErrorHandler(string error)
+        {
+            OnError?.Invoke(error);
+        }
+
+        public void OnCloseHandler()
+        {
+            OnClose?.Invoke();
+        }
     }
 }
