@@ -16,7 +16,7 @@ public class ProtocolHelpers
         return ((messageType & 0xf) << 27) | (messageNumber & 0x07ffffff);
     }
     
-    public static (RpcMessageTypes, object, uint) ParseProtocolMessage(ProtoReader.State reader)
+    public static (RpcMessageTypes, object, uint)? ParseProtocolMessage(ProtoReader.State reader)
     {
         var header = reader.ReadMessage<RpcMessageHeader>();
         var (messageType, messageNumber) = ParseMessageIdentifier(header.MessageIdentifier);
@@ -31,7 +31,7 @@ public class ProtocolHelpers
             case RpcMessageTypes.StreamMessage:
                 return (messageType, reader.ReadMessage<StreamMessage>(), messageNumber);
             case RpcMessageTypes.ServerReady:
-                throw new Exception("No exists");
+                return null;
             case RpcMessageTypes.RemoteErrorResponse:
                 return (messageType, reader.ReadMessage<RemoteError>(), messageNumber);
             case RpcMessageTypes.Request:
@@ -46,7 +46,7 @@ public class ProtocolHelpers
                 return (messageType, reader.ReadMessage<DestroyPort>(), messageNumber);
         }
 
-        throw new Exception("No exists");
+        return null;
     }
 
 }

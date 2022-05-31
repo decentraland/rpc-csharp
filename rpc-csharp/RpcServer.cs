@@ -21,7 +21,12 @@ public class RpcServer
         {
             var reader = ProtoReader.State.Create(data, null);
             
-            var (messageType, message, messageNumber) = ProtocolHelpers.ParseProtocolMessage(reader);
+            var parsedMessage = ProtocolHelpers.ParseProtocolMessage(reader);
+
+            if (parsedMessage != null)
+            {
+                var (messageType, message, messageNumber) = parsedMessage.Value;
+            }
 
             //var key = $"{messageNumber},{header}";
             

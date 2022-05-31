@@ -3,16 +3,16 @@ namespace rpc_csharp.transport;
 public interface ITransport
 {
     // Functions
-    public abstract void SendMessage(byte[] data);
+    void SendMessage(byte[] data);
 
-    public abstract void Close();
+    void Close();
     
     // Events
-    public event Action OnClose;
+    event Action OnClose;
 
-    public event Action<string> OnError;
+    event Action<string> OnError;
 
-    public event Action<byte[]> OnMessage;
+    event Action<byte[]> OnMessage;
 
-    public event Action OnConnect; 
+    event Action OnConnect; 
 }
