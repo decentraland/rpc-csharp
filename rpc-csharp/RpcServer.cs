@@ -19,13 +19,17 @@ namespace rpc_csharp
 
             transport.OnMessage += (byte[] data) =>
             {
-                var reader = ProtoReader.State.Create(data, null);
-
-                var parsedMessage = ProtocolHelpers.ParseProtocolMessage(reader);
+                var parsedMessage = ProtocolHelpers.ParseProtocolMessage(data);
 
                 if (parsedMessage != null)
                 {
                     var (messageType, message, messageNumber) = parsedMessage.Value;
+                    if (messageType == RpcMessageTypes.CreatePort)
+                    {
+                        var createPortMessage = (message as CreatePort)!;
+                        
+                        Console.WriteLine("PortName: " + createPortMessage.PortName);
+                    }
                     //var key = $"{messageNumber},{header}";
                     Console.WriteLine("MessageNumber: " + messageNumber);
                 }

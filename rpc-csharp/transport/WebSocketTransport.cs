@@ -5,10 +5,10 @@ namespace rpc_csharp.transport
     public sealed class WebSocketTransport : ITransport, WebSocketEvents
     {
         private WebSocketService service;
-        public event Action OnClose;
-        public event Action<string> OnError;
-        public event Action<byte[]> OnMessage;
-        public event Action OnConnect;
+        public event Action? OnClose;
+        public event Action<string>? OnError;
+        public event Action<byte[]>? OnMessage;
+        public event Action? OnConnect;
 
         public WebSocketTransport()
         {

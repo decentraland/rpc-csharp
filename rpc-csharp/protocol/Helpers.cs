@@ -1,5 +1,3 @@
-using ProtoBuf;
-
 namespace rpc_csharp.protocol
 {
     public class ProtocolHelpers
@@ -16,35 +14,36 @@ namespace rpc_csharp.protocol
             return ((messageType & 0xf) << 27) | (messageNumber & 0x07ffffff);
         }
 
-        public static (RpcMessageTypes, object, uint)? ParseProtocolMessage(ProtoReader.State reader)
+        public static (RpcMessageTypes, object, uint)? ParseProtocolMessage(byte[] data)
         {
-            var header = reader.ReadMessage<RpcMessageHeader>();
+            
+            var header = RpcMessageHeader.Parser.ParseFrom(data);
             var (messageType, messageNumber) = ParseMessageIdentifier(header.MessageIdentifier);
 
             switch (messageType)
             {
                 case RpcMessageTypes.CreatePortResponse:
-                    return (messageType, reader.ReadMessage<CreatePortResponse>(), messageNumber);
+                    return (messageType, CreatePortResponse.Parser.ParseFrom(data), messageNumber);
                 case RpcMessageTypes.Response:
-                    return (messageType, reader.ReadMessage<Response>(), messageNumber);
+                    return (messageType, Response.Parser.ParseFrom(data), messageNumber);
                 case RpcMessageTypes.RequestModuleResponse:
-                    return (messageType, reader.ReadMessage<RequestModuleResponse>(), messageNumber);
+                    return (messageType, RequestModuleResponse.Parser.ParseFrom(data), messageNumber);
                 case RpcMessageTypes.StreamMessage:
-                    return (messageType, reader.ReadMessage<StreamMessage>(), messageNumber);
+                    return (messageType, StreamMessage.Parser.ParseFrom(data), messageNumber);
                 case RpcMessageTypes.ServerReady:
                     return null;
                 case RpcMessageTypes.RemoteErrorResponse:
-                    return (messageType, reader.ReadMessage<RemoteError>(), messageNumber);
+                    return (messageType, RemoteError.Parser.ParseFrom(data), messageNumber);
                 case RpcMessageTypes.Request:
-                    return (messageType, reader.ReadMessage<Request>(), messageNumber);
+                    return (messageType, Request.Parser.ParseFrom(data), messageNumber);
                 case RpcMessageTypes.CreatePort:
-                    return (messageType, reader.ReadMessage<CreatePort>(), messageNumber);
+                    return (messageType, CreatePort.Parser.ParseFrom(data), messageNumber);
                 case RpcMessageTypes.StreamAck:
-                    return (messageType, reader.ReadMessage<StreamMessage>(), messageNumber);
+                    return (messageType, StreamMessage.Parser.ParseFrom(data), messageNumber);
                 case RpcMessageTypes.RequestModule:
-                    return (messageType, reader.ReadMessage<RequestModule>(), messageNumber);
+                    return (messageType, RequestModule.Parser.ParseFrom(data), messageNumber);
                 case RpcMessageTypes.DestroyPort:
-                    return (messageType, reader.ReadMessage<DestroyPort>(), messageNumber);
+                    return (messageType, DestroyPort.Parser.ParseFrom(data), messageNumber);
             }
 
             return null;
