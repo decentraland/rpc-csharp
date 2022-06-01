@@ -1,53 +1,44 @@
 using System;
-
-namespace rpc_csharp.transport
+using rpc_csharp.transport;
+using WebSocketSharp.Server;
+public class WebSocketServerTransport : WebSocketBehavior, ITransport
 {
-    public sealed class WebSocketTransport : ITransport, WebSocketEvents
+    protected override void OnMessage(WebSocketSharp.MessageEventArgs e)
     {
-        private WebSocketService service;
-        public event Action? OnClose;
-        public event Action<string>? OnError;
-        public event Action<byte[]>? OnMessage;
-        public event Action? OnConnect;
-
-        public WebSocketTransport()
-        {
-            service = new WebSocketService(this);
-        }
-
-        public WebSocketService GetService()
-        {
-            return service;
-        }
-
-        public void SendMessage(byte[] data)
-        {
-            service.SendMessage(data);
-        }
-
-        public void Close()
-        {
-            service.Close();
-        }
-
-        public void OnConnectHandler()
-        {
-            OnConnect?.Invoke();
-        }
-
-        public void OnMessageHandler(byte[] data)
-        {
-            OnMessage?.Invoke(data);
-        }
-
-        public void OnErrorHandler(string error)
-        {
-            OnError?.Invoke(error);
-        }
-
-        public void OnCloseHandler()
-        {
-            OnClose?.Invoke();
-        }
+        base.OnMessage(e);
+        OnMessageEvent?.Invoke(e.RawData);
     }
+
+    protected override void OnError(WebSocketSharp.ErrorEventArgs e)
+    {
+        base.OnError(e);
+        OnErrorEvent?.Invoke(e.Message);
+    }
+
+    protected override void OnClose(WebSocketSharp.CloseEventArgs e)
+    {
+        base.OnClose(e);
+        OnCloseEvent?.Invoke();
+    }
+
+    protected override void OnOpen()
+    {
+        base.OnOpen();
+        OnConnectEvent?.Invoke();
+    }
+
+    public void SendMessage(byte[] data)
+    {
+        Send(data);
+    }
+
+    public void Close()
+    {
+        Sessions.CloseSession(ID);
+    }
+
+    public event Action? OnCloseEvent;
+    public event Action<string>? OnErrorEvent;
+    public event Action<byte[]>? OnMessageEvent;
+    public event Action? OnConnectEvent;
 }

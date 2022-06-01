@@ -8,14 +8,14 @@ namespace rpc_csharp.transport
         void SendMessage(byte[] data);
 
         void Close();
-
+        
         // Events
-        event Action OnClose;
+        event Action OnCloseEvent;
 
-        event Action<string> OnError;
+        event Action<string> OnErrorEvent;
 
-        event Action<byte[]> OnMessage;
+        event Action<byte[]> OnMessageEvent;
 
-        event Action OnConnect;
+        event Action OnConnectEvent;
     }
 }

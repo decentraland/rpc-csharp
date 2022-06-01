@@ -17,7 +17,7 @@ namespace rpc_csharp
         {
             transport = newTransport;
 
-            transport.OnMessage += (byte[] data) =>
+            transport.OnMessageEvent += (byte[] data) =>
             {
                 var parsedMessage = ProtocolHelpers.ParseProtocolMessage(data);
 
