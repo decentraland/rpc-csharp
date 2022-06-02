@@ -9,9 +9,8 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: |
-          5.0.x
+          4.8.x
     # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
-    - run: dotnet build rpc-csharp
-    - run: dotnet build rpc-csharp-test
+    - run: dotnet test
