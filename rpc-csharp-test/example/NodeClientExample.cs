@@ -12,7 +12,7 @@ class NodeClientExample
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "node",
-                    Arguments = "dist/integration.js",
+                    Arguments = "index.js",
                     UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true,
                     CreateNoWindow = true,
                     WorkingDirectory = WorkingDirectory
