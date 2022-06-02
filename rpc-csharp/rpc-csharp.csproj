@@ -5,7 +5,6 @@
         <Nullable>enable</Nullable>
         <LangVersion>9</LangVersion>
         <TargetFramework>net48</TargetFramework>
-        <OutputType>Exe</OutputType>
     </PropertyGroup>
 
     <ItemGroup>
