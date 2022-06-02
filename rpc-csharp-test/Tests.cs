@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 
 namespace rpc_csharp_test
 {
@@ -8,6 +9,7 @@ namespace rpc_csharp_test
         [Test]
         public void Test1()
         {
+            Console.Write("Hello from test");
             Assert.True(true);
         }
     }
