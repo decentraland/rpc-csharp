@@ -14,13 +14,20 @@ namespace rpc_csharp.example
 
             RpcServer rpcServer = new RpcServer();
 
-            wss.AddWebSocketService("/", (() =>
+            wss.AddWebSocketService("/", () =>
             {
                 var transport = new WebSocketServerTransport();
                 Console.Write("> Create transport");
                 rpcServer.AttachTransport(transport);
+
+                transport.OnMessageEvent += data =>
+                {
+                    Console.WriteLine("Close transport");
+                    //transport.Close(); // Close program to test
+                };
+                
                 return transport;
-            }));
+            });
 
             wss.Start();
 

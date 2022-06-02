@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using NUnit.Framework;
-using rpc_csharp.example;
+﻿using NUnit.Framework;
 
 namespace rpc_csharp_test
 {
@@ -11,9 +8,6 @@ namespace rpc_csharp_test
         [Test]
         public void Test1()
         {
-            ServerExample.run();
-            
-            NodeClientExample.run("rpc-test-client-js");
             Assert.True(true);
         }
     }
