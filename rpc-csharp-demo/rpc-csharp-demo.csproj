@@ -1,53 +1,13 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
     <PropertyGroup>
-        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-        <ProjectGuid>{05535149-F50D-4DAB-98FB-3CEADD366170}</ProjectGuid>
         <OutputType>Exe</OutputType>
-        <AppDesignerFolder>Properties</AppDesignerFolder>
+        <TargetFramework>net6.0</TargetFramework>
         <RootNamespace>rpc_csharp_demo</RootNamespace>
-        <AssemblyName>rpc_csharp_demo</AssemblyName>
-        <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-        <FileAlignment>512</FileAlignment>
-        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-        <PlatformTarget>AnyCPU</PlatformTarget>
-        <DebugSymbols>true</DebugSymbols>
-        <DebugType>full</DebugType>
-        <Optimize>false</Optimize>
-        <OutputPath>bin\Debug\</OutputPath>
-        <DefineConstants>DEBUG;TRACE</DefineConstants>
-        <ErrorReport>prompt</ErrorReport>
-        <WarningLevel>4</WarningLevel>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-        <PlatformTarget>AnyCPU</PlatformTarget>
-        <DebugType>pdbonly</DebugType>
-        <Optimize>true</Optimize>
-        <OutputPath>bin\Release\</OutputPath>
-        <DefineConstants>TRACE</DefineConstants>
-        <ErrorReport>prompt</ErrorReport>
-        <WarningLevel>4</WarningLevel>
-    </PropertyGroup>
-    <ItemGroup>
-        <Reference Include="System" />
-        <Reference Include="System.Core" />
-        <Reference Include="System.Data" />
-        <Reference Include="System.Xml" />
-        <Reference Include="websocket-sharp, Version=1.0.2.59611, Culture=neutral, PublicKeyToken=5660b08a1845a91e">
-          <HintPath>..\packages\WebSocketSharp.1.0.3-rc11\lib\websocket-sharp.dll</HintPath>
-          <Private>True</Private>
-        </Reference>
-    </ItemGroup>
-    <ItemGroup>
-        <Compile Include="example\NodeClientExample.cs" />
-        <Compile Include="example\ServerExample.cs" />
-        <Compile Include="Program.cs" />
-        <Compile Include="Properties\AssemblyInfo.cs" />
-    </ItemGroup>
+
     <ItemGroup>
       <ContentWithTargetPath Include="test-resources\rpc-test-client-js\api.d.ts" />
       <ContentWithTargetPath Include="test-resources\rpc-test-client-js\api.d.ts.map" />
@@ -59,28 +19,20 @@
       <ContentWithTargetPath Include="test-resources\rpc-test-client-js\server.d.ts" />
       <ContentWithTargetPath Include="test-resources\rpc-test-client-js\server.d.ts.map" />
     </ItemGroup>
+
     <ItemGroup>
         <ContentWithTargetPath Include="test-resources\**">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <TargetPath>%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
         </ContentWithTargetPath>
     </ItemGroup>
+
     <ItemGroup>
-      <None Include="packages.config" />
+      <ProjectReference Include="..\rpc-csharp\rpc-csharp.csproj" />
     </ItemGroup>
+
     <ItemGroup>
-      <ProjectReference Include="..\rpc-csharp\rpc-csharp.csproj">
-        <Project>{d22d5f7c-e9bc-4a44-aa21-6ac53390dc35}</Project>
-        <Name>rpc-csharp</Name>
-      </ProjectReference>
+      <PackageReference Include="websocketsharp.core" Version="1.0.0" />
     </ItemGroup>
-    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-    <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-         Other similar extension points exist, see Microsoft.Common.targets.
-    <Target Name="BeforeBuild">
-    </Target>
-    <Target Name="AfterBuild">
-    </Target>
-    -->
 
 </Project>

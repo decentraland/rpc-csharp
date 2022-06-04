@@ -1,12 +1,11 @@
-using System;
-using rpc_csharp.transport;
+using rpc_csharp;
 using WebSocketSharp.Server;
 
-namespace rpc_csharp.example
+namespace rpc_csharp_demo.example
 {
-    public class ServerExample
+    public static class ServerExample
     {
-        public static void run()
+        public static void Run()
         {
             Console.Write("> Creating server");
             var url = $"ws://localhost:{8080}/";
