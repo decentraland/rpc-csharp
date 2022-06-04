@@ -51,12 +51,6 @@
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\rpc-csharp\rpc-csharp.csproj">
-        <Project>{d22d5f7c-e9bc-4a44-aa21-6ac53390dc35}</Project>
-        <Name>rpc-csharp</Name>
-      </ProjectReference>
-    </ItemGroup>
-    <ItemGroup>
       <None Include="packages.config" />
     </ItemGroup>
     <ItemGroup>
