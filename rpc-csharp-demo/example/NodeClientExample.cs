@@ -1,9 +1,10 @@
-using System;
 using System.Diagnostics;
 
-class NodeClientExample
+namespace rpc_csharp_demo.example;
+
+static class NodeClientExample
 {
-    public static void run(string WorkingDirectory)
+    public static void Run(string workingDirectory)
     {
         try
         {
@@ -15,7 +16,7 @@ class NodeClientExample
                     Arguments = "index.js",
                     UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true,
                     CreateNoWindow = true,
-                    WorkingDirectory = WorkingDirectory
+                    WorkingDirectory = workingDirectory
                 }
             };
 
