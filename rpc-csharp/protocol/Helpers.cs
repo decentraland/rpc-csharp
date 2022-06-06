@@ -9,9 +9,9 @@ namespace rpc_csharp.protocol
         }
 
         // @internal
-        public static uint CalculateMessageIdentifier(uint messageType, uint messageNumber)
+        public static uint CalculateMessageIdentifier(RpcMessageTypes messageType, uint messageNumber)
         {
-            return ((messageType & 0xf) << 27) | (messageNumber & 0x07ffffff);
+            return (((uint)messageType & 0xf) << 27) | (messageNumber & 0x07ffffff);
         }
 
         public static (RpcMessageTypes, object, uint)? ParseProtocolMessage(byte[] data)

@@ -1,23 +1,38 @@
+using Google.Protobuf.WellKnownTypes;
 using rpc_csharp;
 using WebSocketSharp.Server;
 
 namespace rpc_csharp_demo.example
 {
+    public class LeContext
+    {
+        public string hello;
+    }
     public static class ServerExample
     {
         public static void Run()
         {
+            LeContext context = new LeContext()
+            {
+                hello = "world"
+            };
+            
             Console.Write("> Creating server");
             var url = $"ws://localhost:{8080}/";
-            WebSocketServer wss = new WebSocketServer(url);
+            var wss = new WebSocketServer(url);
 
-            RpcServer rpcServer = new RpcServer();
+            var rpcServer = new RpcServer<LeContext>();
+            
+            rpcServer.SetHandler((port, transport, leContext) =>
+            {
+                Console.WriteLine(port.portId);
+            });
 
             wss.AddWebSocketService("/", () =>
             {
                 var transport = new WebSocketServerTransport();
                 Console.Write("> Create transport");
-                rpcServer.AttachTransport(transport);
+                rpcServer.AttachTransport(transport, context);
                 return transport;
             });
 

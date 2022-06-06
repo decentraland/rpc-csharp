@@ -1,9 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Google.Protobuf.Collections;
+using rpc_csharp.transport;
 
 namespace rpc_csharp.server
 {
+        
+    public delegate void RpcServerHandler<Context>
+    (
+        IRpcServerPort<Context> serverPort,
+        ITransport transport,
+        Context context
+    );
     public delegate Task<byte[]> CallableProcedureServer<Context>(byte[] payload, Context context);
 
     public delegate Task<byte[]> AsyncProcedureResultServer();
@@ -19,7 +28,7 @@ namespace rpc_csharp.server
     public interface IServerModuleProcedure<Context>
     {
         string procedureName { get; }
-        int procedureId { get; }
+        uint procedureId { get; }
         CallableProcedureServer<Context> callable { get; }
     }
 
@@ -31,7 +40,7 @@ namespace rpc_csharp.server
     public interface IRpcServerPort<Context>
     {
         event Action OnClose;
-        int portId { get; }
+        uint portId { get; }
         string portName { get; }
         void RegisterModule(string moduleName, ModuleGeneratorFunction<Context> moduleDefinition);
         Task<IServerModuleDeclaration<Context>> LoadModule(string moduleName);

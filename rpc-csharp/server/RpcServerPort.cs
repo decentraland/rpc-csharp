@@ -14,7 +14,7 @@ namespace rpc_csharp.server
         private class ServerModuleProcedure<Context> : IServerModuleProcedure<Context>
         {
             public string procedureName { set; get; }
-            public int procedureId { set; get; }
+            public uint procedureId { set; get; }
             public CallableProcedureServer<Context> callable { set; get; }
         }
 
@@ -23,10 +23,10 @@ namespace rpc_csharp.server
         private readonly Dictionary<string, ModuleGeneratorFunction<Context>> registeredModules = new();
 
         private event Action OnClose;
-        private int portId;
+        private uint portId;
         private string portName;
 
-        public static IRpcServerPort<Context> CreateServerPort(int portId, string portName)
+        public static IRpcServerPort<Context> CreateServerPort(uint portId, string portName)
         {
             RpcServerPort<Context> port = new()
             {
@@ -58,7 +58,7 @@ namespace rpc_csharp.server
                     {
                         procedureName = procedureName,
                         callable = callable,
-                        procedureId = procedureId,
+                        procedureId = (uint)procedureId,
                     });
                 }
             }
@@ -72,7 +72,7 @@ namespace rpc_csharp.server
             remove => OnClose -= value;
         }
 
-        int IRpcServerPort<Context>.portId => portId;
+        uint IRpcServerPort<Context>.portId => portId;
 
         string IRpcServerPort<Context>.portName => portName;
 
