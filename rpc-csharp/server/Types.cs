@@ -75,6 +75,7 @@ namespace rpc_csharp.server
         Task<ServerModuleDeclaration<Context>> LoadModule(string moduleName);
         IEnumerator<Task<byte[]>> CallStreamProcedure(uint procedureId, byte[] payload, Context context);
         Task<byte[]> CallUnaryProcedure(uint procedureId, byte[] payload, Context context);
+        object CallProcedure(uint procedureId, byte[] payload, Context context);
         void Close();
     }
 }

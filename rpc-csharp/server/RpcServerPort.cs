@@ -147,6 +147,21 @@ namespace rpc_csharp.server
             var result = procedure(payload, context);
             return result;
         }
+        
+        public object CallProcedure(uint procedureId, byte[] payload, Context context)
+        {
+            if (procedures.TryGetValue(procedureId, out UnaryCallback<Context> unaryCallback))
+            {
+                return unaryCallback(payload, context);
+            }
+            
+            if (!streamProcedures.TryGetValue(procedureId, out AsyncGenerator<Context> streamProcedure))
+            {
+                return streamProcedure(payload, context);
+            }
+
+            throw new Exception($"procedureId ${procedureId} is missing in {portName} ({portId}))");
+        }
 
         void IRpcServerPort<Context>.Close()
         {

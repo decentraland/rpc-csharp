@@ -67,32 +67,56 @@ namespace rpc_csharp
             transport.SendMessage(response.ToByteArray());
         }
 
+        private async Task SendStream(AckHelper ackHelper, ITransport transport, uint messageNumber, uint portId)
+        {
+            var response = new StreamMessage()
+            {
+                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                    RpcMessageTypes.StreamMessage,
+                    messageNumber
+                ),
+                Closed = false,
+                Ack = false,
+                Payload = ByteString.Empty,
+                PortId = portId
+            };
+            //transport.SendMessage(response.ToByteArray());
+        }
         private async Task HandleRequest(Request message, uint messageNumber, Context context,
-            ITransport transport)
+            ITransport transport, AckHelper ackHelper)
         {
             if (!ports.TryGetValue(message.PortId, out var port))
             {
                 throw new InvalidOperationException($"Cannot find port {message.PortId}");
             }
-
+            
             // TODO: CallStreamProcedure
-            var res = await port.CallUnaryProcedure(message.ProcedureId, message.Payload.ToByteArray(), context);
-            
-            var response = new Response
-            {
-                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
-                    RpcMessageTypes.Response,
-                    messageNumber
-                ),
-                Payload = ByteString.Empty
-            };
+            var obj = port.CallProcedure(message.ProcedureId, message.Payload.ToByteArray(), context);
 
-            if (res.Length > 0)
+            if (obj is Task<byte[]> unaryProcedure)
             {
-                response.Payload = ByteString.CopyFrom(res);
-            }
+                var res = await unaryProcedure;
+                var response = new Response
+                {
+                    MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                        RpcMessageTypes.Response,
+                        messageNumber
+                    ),
+                    Payload = ByteString.Empty
+                };
+
+                if (res.Length > 0)
+                {
+                    response.Payload = ByteString.CopyFrom(res);
+                }
             
-            transport.SendMessage(response.ToByteArray());
+                transport.SendMessage(response.ToByteArray());
+            }
+            else if (obj is IEnumerator<Task<byte[]>> streamProcedure)
+            {
+                await SendStream(ackHelper, transport, messageNumber, port.portId);
+            }
+            throw new InvalidOperationException($"Unknown type {message.PortId}");
         }
 
         public void SetHandler(RpcServerHandler<Context> handler)
@@ -102,6 +126,8 @@ namespace rpc_csharp
 
         public void AttachTransport(ITransport transport, Context context)
         {
+            var ackHelper = new AckHelper(transport);
+            
             transport.OnMessageEvent += async (byte[] data) =>
             {
                 var parsedMessage = ProtocolHelpers.ParseProtocolMessage(data);
@@ -118,7 +144,11 @@ namespace rpc_csharp
                             await HandleRequestModule((RequestModule)message, messageNumber, context, transport);
                             break;
                         case RpcMessageTypes.Request:
-                            await HandleRequest((Request)message, messageNumber, context, transport);
+                            await HandleRequest((Request)message, messageNumber, context, transport, ackHelper);
+                            break;
+                        case RpcMessageTypes.StreamAck:
+                        case RpcMessageTypes.StreamMessage:
+                            ackHelper.ReceiveAck((StreamMessage)message, messageNumber);
                             break;
                         default:
                             Console.WriteLine("Not implemented message: " + messageType);
