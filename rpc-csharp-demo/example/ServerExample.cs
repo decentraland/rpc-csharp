@@ -1,23 +1,92 @@
+using System.Xml.Serialization;
+using Google.Protobuf.WellKnownTypes;
+using Grpc.Core;
 using rpc_csharp;
+using rpc_csharp.server;
 using WebSocketSharp.Server;
 
 namespace rpc_csharp_demo.example
 {
+    /*class TestBinder<Context> : ServiceBinderBase
+    {
+        public Dictionary<string, UnaryCallback<Context>> unaryMethods;
+        public ModuleGeneratorFunction<Context> GetModuleDefinition()
+        {
+            return port =>
+            {
+                var definition = new Dictionary<string, UnaryCallback<Context>>();
+                definition.Add(
+                {
+                    
+                });
+                return Task.FromResult(new ServerModuleDefinition<Context>
+                {
+                    definition =
+                    {
+                        
+                    }
+                });
+            };
+        }
+
+        public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, UnaryServerMethod<TRequest, TResponse> handler)
+        {
+            unaryMethods.Add(method.FullName, (payload, context) =>
+            {
+                return handler.Invoke();
+            });
+            base.AddMethod(method, handler);
+        }
+
+        public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, ClientStreamingServerMethod<TRequest, TResponse> handler)
+        {
+            base.AddMethod(method, handler);
+        }
+
+        public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, ServerStreamingServerMethod<TRequest, TResponse> handler)
+        {
+            base.AddMethod(method, handler);
+        }
+    }*/
     public static class ServerExample
     {
         public static void Run()
         {
+            var context = new BookContext()
+            {
+                books = new []
+                {
+                    new Book() { Author = "mr menduz", Isbn = 1234, Title = "1001 reasons to write your own OS" },
+                    new Book() { Author = "mr cazala", Isbn = 1111, Title = "Advanced CSS" },
+                    new Book() { Author = "mr mannakia", Isbn = 7666, Title = "Advanced binary packing" },
+                    new Book() { Author = "mr kuruk", Isbn = 7668, Title = "Advanced bots AI" },
+                    /*new Book() { Title = "Pato", Author = "QuiereAsado", Isbn = 1234 },
+                    new Book() { Title = "Title2", Author = "Owen", Isbn = 5678 },
+                    new Book() { Title = "Title3", Author = "Bardock", Isbn = 5678 },
+                    new Book() { Title = "Rpc onion layers", Author = "menduz", Isbn = 19997 }*/
+                }
+            };
+            
             Console.Write("> Creating server");
             var url = $"ws://localhost:{8080}/";
-            WebSocketServer wss = new WebSocketServer(url);
+            var wss = new WebSocketServer(url);
 
-            RpcServer rpcServer = new RpcServer();
+            var rpcServer = new RpcServer<BookContext>();
+
+            rpcServer.SetHandler((port, transport, context) =>
+            {
+                BookServiceImpl service = new();
+                port.RegisterModule(service.ServiceName, (port) =>
+                {
+                    return Task.FromResult(service.GetModuleDefinition());
+                });
+            });
 
             wss.AddWebSocketService("/", () =>
             {
                 var transport = new WebSocketServerTransport();
                 Console.Write("> Create transport");
-                rpcServer.AttachTransport(transport);
+                rpcServer.AttachTransport(transport, context);
                 return transport;
             });
 

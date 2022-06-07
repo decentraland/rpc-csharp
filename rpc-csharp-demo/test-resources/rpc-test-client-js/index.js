@@ -34687,16 +34687,19 @@ const runClient = () => {
         // 8th step: profit
         console.log("> Invoking BookService.getBook(isbn:19997)");
         const response = await clientBookService.getBook({ isbn: 19997 });
-        console.log("  Response: ", response);
+        console.log("  Responsev2: ", response);
         (0, expect_1.default)(response).toEqual({
             author: "menduz",
             isbn: 19997,
             title: "Rpc onion layers",
         });
+        console.log("  InitQueryBook");
         const list = [];
         for await (const book of clientBookService.queryBooks({ authorPrefix: "mr" })) {
             list.push(book);
+            console.log("  StreamResponse: ", book);
         }
+        console.log("  List: ", list);
         (0, expect_1.default)(list).toEqual(server_1.context.hardcodedDatabase);
         clientSocket.close();
     }
