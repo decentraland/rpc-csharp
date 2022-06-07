@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Threading.Tasks;
 
 namespace rpc_csharp.server
@@ -19,8 +20,8 @@ namespace rpc_csharp.server
         }*/
 
         private readonly Dictionary<string, Task<ServerModuleDeclaration<Context>>> loadedModules = new();
-        private readonly Dictionary<int, UnaryCallback<Context>> procedures = new();
-        private readonly Dictionary<int, AsyncGenerator<Context>> streamProcedures = new();
+        private readonly Dictionary<uint, UnaryCallback<Context>> procedures = new();
+        private readonly Dictionary<uint, AsyncGenerator<Context>> streamProcedures = new();
         private readonly Dictionary<string, ModuleGeneratorFunction<Context>> registeredModules = new();
 
         private event Action OnClose;
@@ -51,7 +52,7 @@ namespace rpc_csharp.server
             {
                 while (iterator.MoveNext())
                 {
-                    var procedureId = procedures.Count + 1;
+                    var procedureId = (uint)(procedures.Count + 1);
                     var procedureName = iterator.Current.Key;
                     var callable = iterator.Current.Value;
                     procedures.Add(procedureId, iterator.Current.Value);
@@ -59,7 +60,7 @@ namespace rpc_csharp.server
                     {
                         procedureName = procedureName,
                         callable = callable,
-                        procedureId = (uint)procedureId,
+                        procedureId = procedureId,
                     });
                 }
             }
@@ -69,7 +70,7 @@ namespace rpc_csharp.server
             {
                 while (iterator.MoveNext())
                 {
-                    var procedureId = procedures.Count + 1;
+                    var procedureId = (uint)(procedures.Count + 1);
                     var procedureName = iterator.Current.Key;
                     var callable = iterator.Current.Value;
                     streamProcedures.Add(procedureId, iterator.Current.Value);
@@ -77,7 +78,7 @@ namespace rpc_csharp.server
                     {
                         procedureName = procedureName,
                         asyncCallable = callable,
-                        procedureId = (uint)procedureId,
+                        procedureId = procedureId,
                     });
                 }
             }
@@ -124,13 +125,19 @@ namespace rpc_csharp.server
             return moduleFuture;
         }
 
-        public AsyncGenerator<Context> CallStreamProcedure(int procedureId, byte[] payload, Context context)
+        public IEnumerator<Task<byte[]>> CallStreamProcedure(uint procedureId, byte[] payload, Context context)
         {
-            throw new NotImplementedException();
+            if (!streamProcedures.TryGetValue(procedureId, out AsyncGenerator<Context> procedure))
+            {
+                throw new Exception($"procedureId ${procedureId} is missing in {portName} ({portId}))");
+            }
+            
+            var result = procedure(payload, context);
+            return result;
         }
 
         // TODO: Tal vez CallStreamProcedure y CallUnaryProcedure son lo mismo
-        public Task<byte[]> CallUnaryProcedure(int procedureId, byte[] payload, Context context)
+        public Task<byte[]> CallUnaryProcedure(uint procedureId, byte[] payload, Context context)
         {
             if (!procedures.TryGetValue(procedureId, out UnaryCallback<Context> procedure))
             {

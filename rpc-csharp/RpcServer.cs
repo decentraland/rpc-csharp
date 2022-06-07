@@ -49,11 +49,11 @@ namespace rpc_csharp
 
             var loadedModule = await port.LoadModule(message.ModuleName);
 
-            /*var pbProcedures = loadedModule.procedures.Select(x => new ModuleProcedure()
+            var pbProcedures = loadedModule.procedures.Select(x => new ModuleProcedure()
             {
                 ProcedureId = x.procedureId,
                 ProcedureName = x.procedureName
-            }).ToList();*/
+            }).ToList();
 
             var response = new RequestModuleResponse
             {
@@ -64,6 +64,34 @@ namespace rpc_csharp
                 ),
                 PortId = port.portId
             };
+            transport.SendMessage(response.ToByteArray());
+        }
+
+        private async Task HandleRequest(Request message, uint messageNumber, Context context,
+            ITransport transport)
+        {
+            if (!ports.TryGetValue(message.PortId, out var port))
+            {
+                throw new InvalidOperationException($"Cannot find port {message.PortId}");
+            }
+
+            // TODO: CallStreamProcedure
+            var res = await port.CallUnaryProcedure(message.ProcedureId, message.Payload.ToByteArray(), context);
+            
+            var response = new Response
+            {
+                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                    RpcMessageTypes.Response,
+                    messageNumber
+                ),
+                Payload = ByteString.Empty
+            };
+
+            if (res.Length > 0)
+            {
+                response.Payload = ByteString.CopyFrom(res);
+            }
+            
             transport.SendMessage(response.ToByteArray());
         }
 
@@ -88,6 +116,9 @@ namespace rpc_csharp
                             break;
                         case RpcMessageTypes.RequestModule:
                             await HandleRequestModule((RequestModule)message, messageNumber, context, transport);
+                            break;
+                        case RpcMessageTypes.Request:
+                            await HandleRequest((Request)message, messageNumber, context, transport);
                             break;
                         default:
                             Console.WriteLine("Not implemented message: " + messageType);

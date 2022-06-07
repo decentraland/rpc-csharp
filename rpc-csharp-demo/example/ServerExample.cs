@@ -7,7 +7,7 @@ using WebSocketSharp.Server;
 
 namespace rpc_csharp_demo.example
 {
-    class TestBinder<Context> : ServiceBinderBase
+    /*class TestBinder<Context> : ServiceBinderBase
     {
         public Dictionary<string, UnaryCallback<Context>> unaryMethods;
         public ModuleGeneratorFunction<Context> GetModuleDefinition()
@@ -47,7 +47,7 @@ namespace rpc_csharp_demo.example
         {
             base.AddMethod(method, handler);
         }
-    }
+    }*/
     public static class ServerExample
     {
         public static void Run()
@@ -58,7 +58,8 @@ namespace rpc_csharp_demo.example
                 {
                     new Book() { Title = "Pato", Author = "QuiereAsado", Isbn = 1234 },
                     new Book() { Title = "Title2", Author = "Owen", Isbn = 5678 },
-                    new Book() { Title = "Title3", Author = "Bardock", Isbn = 5678 }
+                    new Book() { Title = "Title3", Author = "Bardock", Isbn = 5678 },
+                    new Book() { Title = "Rpc onion layers", Author = "menduz", Isbn = 19997 }
                 }
             };
             
@@ -70,19 +71,11 @@ namespace rpc_csharp_demo.example
 
             rpcServer.SetHandler((port, transport, context) =>
             {
-                //codegen.registerService(port, BookService.BookServiceBase, new BookServiceImpl());
-                //var binder = new TestBinder<BookContext>();
-                //BookServiceImpl service = new BookServiceImpl(context);
-                //BookService.BindService(binder, service);
-
                 BookServiceImpl service = new();
                 port.RegisterModule(service.ServiceName, (port) =>
                 {
                     return Task.FromResult(service.GetModuleDefinition());
                 });
-                
-                //BookServiceImpl.register(port);
-                //port.RegisterModule("BookService");
             });
 
             wss.AddWebSocketService("/", () =>

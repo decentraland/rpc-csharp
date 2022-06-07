@@ -49,8 +49,8 @@ namespace rpc_csharp.server
 
     public class ServerModuleDefinition<Context>
     {
-        public Dictionary<string, UnaryCallback<Context>> definition { get; }
-        public Dictionary<string, AsyncGenerator<Context>> streamDefinition { get; }
+        public Dictionary<string, UnaryCallback<Context>> definition = new();
+        public Dictionary<string, AsyncGenerator<Context>> streamDefinition = new();
     }
 
     public class ServerModuleProcedure<Context>
@@ -73,8 +73,8 @@ namespace rpc_csharp.server
         string portName { get; }
         void RegisterModule(string moduleName, ModuleGeneratorFunction<Context> moduleDefinition);
         Task<ServerModuleDeclaration<Context>> LoadModule(string moduleName);
-        AsyncGenerator<Context> CallStreamProcedure(int procedureId, byte[] payload, Context context);
-        Task<byte[]> CallUnaryProcedure(int procedureId, byte[] payload, Context context);
+        IEnumerator<Task<byte[]>> CallStreamProcedure(uint procedureId, byte[] payload, Context context);
+        Task<byte[]> CallUnaryProcedure(uint procedureId, byte[] payload, Context context);
         void Close();
     }
 }
