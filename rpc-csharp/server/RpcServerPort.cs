@@ -18,8 +18,9 @@ namespace rpc_csharp.server
             public CallableProcedureServer<Context> callable { set; get; }
         }*/
 
-        private readonly Dictionary<string, Task<IServerModuleDeclaration<Context>>> loadedModules = new();
+        private readonly Dictionary<string, Task<ServerModuleDeclaration<Context>>> loadedModules = new();
         private readonly Dictionary<int, UnaryCallback<Context>> procedures = new();
+        private readonly Dictionary<int, AsyncGenerator<Context>> streamProcedures = new();
         private readonly Dictionary<string, ModuleGeneratorFunction<Context>> registeredModules = new();
 
         private event Action OnClose;
@@ -58,6 +59,24 @@ namespace rpc_csharp.server
                     {
                         procedureName = procedureName,
                         callable = callable,
+                        procedureId = (uint)procedureId,
+                    });
+                }
+            }
+            
+            // TODO: Refactor this copy-paste
+            using (var iterator = module.streamDefinition.GetEnumerator())
+            {
+                while (iterator.MoveNext())
+                {
+                    var procedureId = procedures.Count + 1;
+                    var procedureName = iterator.Current.Key;
+                    var callable = iterator.Current.Value;
+                    streamProcedures.Add(procedureId, iterator.Current.Value);
+                    ret.procedures.Add(new ServerModuleProcedure<Context>()
+                    {
+                        procedureName = procedureName,
+                        asyncCallable = callable,
                         procedureId = (uint)procedureId,
                     });
                 }
@@ -110,20 +129,23 @@ namespace rpc_csharp.server
             throw new NotImplementedException();
         }
 
-        public UnaryCallback<Context> CallUnaryProcedure(int procedureId, byte[] payload, Context context)
+        // TODO: Tal vez CallStreamProcedure y CallUnaryProcedure son lo mismo
+        public Task<byte[]> CallUnaryProcedure(int procedureId, byte[] payload, Context context)
         {
             if (!procedures.TryGetValue(procedureId, out UnaryCallback<Context> procedure))
             {
                 throw new Exception($"procedureId ${procedureId} is missing in {portName} ({portId}))");
             }
-
-            return () => procedure(payload, context);
+            
+            var result = procedure(payload, context);
+            return result;
         }
 
         void IRpcServerPort<Context>.Close()
         {
             loadedModules.Clear();
             procedures.Clear();
+            streamProcedures.Clear();
             registeredModules.Clear();
             OnClose?.Invoke();
         }

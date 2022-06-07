@@ -55,15 +55,15 @@ namespace rpc_csharp.server
 
     public class ServerModuleProcedure<Context>
     {
-        string procedureName { get; }
-        uint procedureId { get; }
-        UnaryCallback<Context>? callable { get; }
-        AsyncGenerator<Context>? asyncCallable { get; }
+        public string procedureName;
+        public uint procedureId;
+        public UnaryCallback<Context>? callable;
+        public AsyncGenerator<Context>? asyncCallable;
     }
 
     public class ServerModuleDeclaration<Context>
     {
-        public List<ServerModuleProcedure<Context>> procedures { get; }
+        public List<ServerModuleProcedure<Context>> procedures;
     }
 
     public interface IRpcServerPort<Context>
@@ -74,7 +74,7 @@ namespace rpc_csharp.server
         void RegisterModule(string moduleName, ModuleGeneratorFunction<Context> moduleDefinition);
         Task<ServerModuleDeclaration<Context>> LoadModule(string moduleName);
         AsyncGenerator<Context> CallStreamProcedure(int procedureId, byte[] payload, Context context);
-        UnaryCallback<Context> CallUnaryProcedure(int procedureId, byte[] payload, Context context);
+        Task<byte[]> CallUnaryProcedure(int procedureId, byte[] payload, Context context);
         void Close();
     }
 }
