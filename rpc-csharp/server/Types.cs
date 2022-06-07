@@ -13,28 +13,57 @@ namespace rpc_csharp.server
         ITransport transport,
         Context context
     );
-    public delegate Task<byte[]> CallableProcedureServer<Context>(byte[] payload, Context context);
+    public delegate Task<byte[]> UnaryCallback<Context>(byte[] payload, Context context);
+    
+    public delegate IEnumerator<Task<byte[]>> AsyncGenerator<Context>(byte[] payload, Context context);
 
-    public delegate Task<byte[]> AsyncProcedureResultServer();
+    /*public class CallableProcedureServer<Context>
+    {
+        private readonly CallableProcedureServer<Context>? callable;
+        private readonly AsyncGenerator<Context>? asyncCallable;
 
-    public delegate Task<IServerModuleDefinition<Context>> ModuleGeneratorFunction<Context>(
+        CallableProcedureServer(CallableProcedureServer<Context>? callable)
+        {
+            this.callable = callable;
+        }
+        
+        CallableProcedureServer(AsyncGenerator<Context>? asyncCallable)
+        {
+            this.asyncCallable = asyncCallable;
+        }
+        void Call()
+        {
+            if (callable != null)
+            {
+                this.callable?.Invoke();
+            }
+            else if (asyncCallable != null)
+            {
+                
+            }
+        }
+    }*/
+
+    public delegate Task<ServerModuleDefinition<Context>> ModuleGeneratorFunction<Context>(
         IRpcServerPort<Context> port);
 
-    public interface IServerModuleDefinition<Context>
+    public class ServerModuleDefinition<Context>
     {
-        Dictionary<string, CallableProcedureServer<Context>> definition { get; }
+        public Dictionary<string, UnaryCallback<Context>> definition { get; }
+        public Dictionary<string, AsyncGenerator<Context>> streamDefinition { get; }
     }
 
-    public interface IServerModuleProcedure<Context>
+    public class ServerModuleProcedure<Context>
     {
         string procedureName { get; }
         uint procedureId { get; }
-        CallableProcedureServer<Context> callable { get; }
+        UnaryCallback<Context>? callable { get; }
+        AsyncGenerator<Context>? asyncCallable { get; }
     }
 
-    public interface IServerModuleDeclaration<Context>
+    public class ServerModuleDeclaration<Context>
     {
-        List<IServerModuleProcedure<Context>> procedures { get; }
+        public List<ServerModuleProcedure<Context>> procedures { get; }
     }
 
     public interface IRpcServerPort<Context>
@@ -43,8 +72,9 @@ namespace rpc_csharp.server
         uint portId { get; }
         string portName { get; }
         void RegisterModule(string moduleName, ModuleGeneratorFunction<Context> moduleDefinition);
-        Task<IServerModuleDeclaration<Context>> LoadModule(string moduleName);
-        AsyncProcedureResultServer CallProcedure(int procedureId, byte[] payload, Context context);
+        Task<ServerModuleDeclaration<Context>> LoadModule(string moduleName);
+        AsyncGenerator<Context> CallStreamProcedure(int procedureId, byte[] payload, Context context);
+        UnaryCallback<Context> CallUnaryProcedure(int procedureId, byte[] payload, Context context);
         void Close();
     }
 }

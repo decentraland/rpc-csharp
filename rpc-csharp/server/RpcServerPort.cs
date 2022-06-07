@@ -6,20 +6,20 @@ namespace rpc_csharp.server
 {
     public class RpcServerPort<Context> : IRpcServerPort<Context>
     {
-        private class ServerModuleDeclaration<Context> : IServerModuleDeclaration<Context>
+        /*private class ServerModuleDeclaration<Context> : IServerModuleDeclaration<Context>
         {
-            public List<IServerModuleProcedure<Context>> procedures { set; get; }
+            public List<server.ServerModuleProcedure<Context>> procedures { set; get; }
         }
 
-        private class ServerModuleProcedure<Context> : IServerModuleProcedure<Context>
+        private class ServerModuleProcedure<Context> : server.ServerModuleProcedure<Context>
         {
             public string procedureName { set; get; }
             public uint procedureId { set; get; }
             public CallableProcedureServer<Context> callable { set; get; }
-        }
+        }*/
 
         private readonly Dictionary<string, Task<IServerModuleDeclaration<Context>>> loadedModules = new();
-        private readonly Dictionary<int, CallableProcedureServer<Context>> procedures = new();
+        private readonly Dictionary<int, UnaryCallback<Context>> procedures = new();
         private readonly Dictionary<string, ModuleGeneratorFunction<Context>> registeredModules = new();
 
         private event Action OnClose;
@@ -37,13 +37,13 @@ namespace rpc_csharp.server
             return port;
         }
 
-        private async Task<IServerModuleDeclaration<Context>> LoadModuleFromGenerator(
-            Task<IServerModuleDefinition<Context>> moduleFuture)
+        private async Task<ServerModuleDeclaration<Context>> LoadModuleFromGenerator(
+            Task<ServerModuleDefinition<Context>> moduleFuture)
         {
             var module = await moduleFuture;
             var ret = new ServerModuleDeclaration<Context>()
             {
-                procedures = new List<IServerModuleProcedure<Context>>()
+                procedures = new List<ServerModuleProcedure<Context>>()
             };
 
             using (var iterator = module.definition.GetEnumerator())
@@ -87,9 +87,9 @@ namespace rpc_csharp.server
             registeredModules.Add(moduleName, moduleDefinition);
         }
 
-        Task<IServerModuleDeclaration<Context>> IRpcServerPort<Context>.LoadModule(string moduleName)
+        Task<ServerModuleDeclaration<Context>> IRpcServerPort<Context>.LoadModule(string moduleName)
         {
-            if (loadedModules.TryGetValue(moduleName, out Task<IServerModuleDeclaration<Context>> loadedModule))
+            if (loadedModules.TryGetValue(moduleName, out Task<ServerModuleDeclaration<Context>> loadedModule))
             {
                 return loadedModule;
             }
@@ -105,10 +105,14 @@ namespace rpc_csharp.server
             return moduleFuture;
         }
 
-        AsyncProcedureResultServer IRpcServerPort<Context>.CallProcedure(int procedureId, byte[] payload,
-            Context context)
+        public AsyncGenerator<Context> CallStreamProcedure(int procedureId, byte[] payload, Context context)
         {
-            if (!procedures.TryGetValue(procedureId, out CallableProcedureServer<Context> procedure))
+            throw new NotImplementedException();
+        }
+
+        public UnaryCallback<Context> CallUnaryProcedure(int procedureId, byte[] payload, Context context)
+        {
+            if (!procedures.TryGetValue(procedureId, out UnaryCallback<Context> procedure))
             {
                 throw new Exception($"procedureId ${procedureId} is missing in {portName} ({portId}))");
             }

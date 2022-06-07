@@ -49,11 +49,11 @@ namespace rpc_csharp
 
             var loadedModule = await port.LoadModule(message.ModuleName);
 
-            var pbProcedures = loadedModule.procedures.Select(x => new ModuleProcedure()
+            /*var pbProcedures = loadedModule.procedures.Select(x => new ModuleProcedure()
             {
                 ProcedureId = x.procedureId,
                 ProcedureName = x.procedureName
-            }).ToList();
+            }).ToList();*/
 
             var response = new RequestModuleResponse
             {
