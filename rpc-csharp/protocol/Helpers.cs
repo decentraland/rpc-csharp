@@ -1,7 +1,23 @@
+using Google.Protobuf;
+
 namespace rpc_csharp.protocol
 {
     public class ProtocolHelpers
     {
+        public static byte[] CloseStreamMessage(uint messageNumber, uint sequenceId, uint portId) {
+            return new StreamMessage()
+            {
+                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                    RpcMessageTypes.StreamMessage,
+                    messageNumber
+                ),
+                Closed = true,
+                Ack = false,
+                Payload = ByteString.Empty,
+                PortId = portId,
+                SequenceId = sequenceId
+            }.ToByteArray();
+        }
         // @internal
         public static (RpcMessageTypes, uint) ParseMessageIdentifier(uint value)
         {

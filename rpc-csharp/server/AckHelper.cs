@@ -32,7 +32,6 @@ public class AckHelper
         }
         oneTimeCallbacks.Clear();
     }
-
     
     public void ReceiveAck(StreamMessage data, uint messageNumber)
     {

@@ -155,7 +155,7 @@ namespace rpc_csharp.server
                 return unaryCallback(payload, context);
             }
             
-            if (!streamProcedures.TryGetValue(procedureId, out AsyncGenerator<Context> streamProcedure))
+            if (streamProcedures.TryGetValue(procedureId, out AsyncGenerator<Context> streamProcedure))
             {
                 return streamProcedure(payload, context);
             }

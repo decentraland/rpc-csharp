@@ -67,9 +67,10 @@ namespace rpc_csharp
             transport.SendMessage(response.ToByteArray());
         }
 
-        private async Task SendStream(AckHelper ackHelper, ITransport transport, uint messageNumber, uint portId)
+        private async Task SendStream(AckHelper ackHelper, ITransport transport, uint messageNumber, uint portId, IEnumerator<Task<byte[]>> stream)
         {
-            var response = new StreamMessage()
+            uint sequenceNumber = 0;
+            var reusedStreamMessage = new StreamMessage()
             {
                 MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
                     RpcMessageTypes.StreamMessage,
@@ -78,9 +79,45 @@ namespace rpc_csharp
                 Closed = false,
                 Ack = false,
                 Payload = ByteString.Empty,
-                PortId = portId
+                PortId = portId,
+                SequenceId = sequenceNumber
             };
-            //transport.SendMessage(response.ToByteArray());
+            
+            // First, tell the client that we are opening a stream. Once the client sends
+            // an ACK, we will know if they are ready to consume the first element.
+            // If the response is instead close=true, then this function returns and
+            // no stream.next() is called
+            // The following lines are called "stream offer" in the tests.
+            {
+                var ret = await ackHelper.SendWithAck(reusedStreamMessage);
+                if (ret.Closed) return;
+                if (!ret.Ack) throw new Exception("Error in logic, ACK must be true");
+            }
+
+            // If this point is reached, then the client WANTS to consume an element of the
+            // generator
+            using (var iterator = stream)
+            {
+                while (iterator.MoveNext())
+                {
+                    var elem = await iterator.Current;
+                    sequenceNumber++;
+                    reusedStreamMessage.SequenceId = sequenceNumber;
+                    reusedStreamMessage.Payload = ByteString.CopyFrom(elem); // TODO: OPTIMIZE!
+
+                    var ret = await ackHelper.SendWithAck(reusedStreamMessage);
+                    if (ret.Ack)
+                    {
+                        continue;
+                    }
+                    else if (ret.Closed)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            transport.SendMessage(ProtocolHelpers.CloseStreamMessage(messageNumber, sequenceNumber, portId));
         }
         private async Task HandleRequest(Request message, uint messageNumber, Context context,
             ITransport transport, AckHelper ackHelper)
@@ -114,9 +151,12 @@ namespace rpc_csharp
             }
             else if (obj is IEnumerator<Task<byte[]>> streamProcedure)
             {
-                await SendStream(ackHelper, transport, messageNumber, port.portId);
+                await SendStream(ackHelper, transport, messageNumber, port.portId, streamProcedure);
             }
-            throw new InvalidOperationException($"Unknown type {message.PortId}");
+            else
+            {
+                throw new InvalidOperationException($"Unknown type {message.PortId}");
+            }
         }
 
         public void SetHandler(RpcServerHandler<Context> handler)

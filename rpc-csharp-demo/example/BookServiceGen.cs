@@ -25,7 +25,7 @@ public abstract class BookServiceGen<Context>
         
         result.streamDefinition.Add("QueryBooks", (payload, context) =>
         {
-            var generator = (IEnumerator<Task<IMessage>>)QueryBooks(GetBookRequest.Parser.ParseFrom(payload), context);
+            var generator = QueryBooks(GetBookRequest.Parser.ParseFrom(payload), context);
             return RegisterStreamFn(generator);
         });
 
@@ -33,7 +33,8 @@ public abstract class BookServiceGen<Context>
     }
     
     // Fixed code
-    private IEnumerator<Task<byte[]>> RegisterStreamFn(IEnumerator<Task<IMessage>> generator)
+    private IEnumerator<Task<byte[]>> RegisterStreamFn<T>(IEnumerator<Task<T>> generator)
+    where T : IMessage
     {
         using (var iterator = generator)
         {

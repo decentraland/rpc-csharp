@@ -56,10 +56,14 @@ namespace rpc_csharp_demo.example
             {
                 books = new []
                 {
-                    new Book() { Title = "Pato", Author = "QuiereAsado", Isbn = 1234 },
+                    new Book() { Author = "mr menduz", Isbn = 1234, Title = "1001 reasons to write your own OS" },
+                    new Book() { Author = "mr cazala", Isbn = 1111, Title = "Advanced CSS" },
+                    new Book() { Author = "mr mannakia", Isbn = 7666, Title = "Advanced binary packing" },
+                    new Book() { Author = "mr kuruk", Isbn = 7668, Title = "Advanced bots AI" },
+                    /*new Book() { Title = "Pato", Author = "QuiereAsado", Isbn = 1234 },
                     new Book() { Title = "Title2", Author = "Owen", Isbn = 5678 },
                     new Book() { Title = "Title3", Author = "Bardock", Isbn = 5678 },
-                    new Book() { Title = "Rpc onion layers", Author = "menduz", Isbn = 19997 }
+                    new Book() { Title = "Rpc onion layers", Author = "menduz", Isbn = 19997 }*/
                 }
             };
             
