@@ -1,8 +1,6 @@
-using System.Xml.Serialization;
-using Google.Protobuf.WellKnownTypes;
-using Grpc.Core;
+using System;
+using System.Threading.Tasks;
 using rpc_csharp;
-using rpc_csharp.server;
 using WebSocketSharp.Server;
 
 namespace rpc_csharp_demo.example

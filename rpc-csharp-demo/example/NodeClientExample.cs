@@ -1,44 +1,46 @@
+using System;
 using System.Diagnostics;
 
-namespace rpc_csharp_demo.example;
-
-static class NodeClientExample
+namespace rpc_csharp_demo.example
 {
-    public static void Run(string workingDirectory)
+    static class NodeClientExample
     {
-        try
+        public static void Run(string workingDirectory)
         {
-            var process = new Process
+            try
             {
-                StartInfo = new ProcessStartInfo
+                var process = new Process
                 {
-                    FileName = "node",
-                    Arguments = "index.js",
-                    UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true,
-                    CreateNoWindow = true,
-                    WorkingDirectory = workingDirectory
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "node",
+                        Arguments = "index.js",
+                        UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true,
+                        CreateNoWindow = true,
+                        WorkingDirectory = workingDirectory
+                    }
+                };
+
+                process.Start();
+
+                while (!process.StandardOutput.EndOfStream)
+                {
+                    var line = process.StandardOutput.ReadLine();
+                    Console.WriteLine(line);
                 }
-            };
 
-            process.Start();
+                while (!process.StandardError.EndOfStream)
+                {
+                    var line = process.StandardError.ReadLine();
+                    Console.WriteLine(line);
+                }
 
-            while (!process.StandardOutput.EndOfStream)
-            {
-                var line = process.StandardOutput.ReadLine();
-                Console.WriteLine(line);
+                process.WaitForExit();
             }
-            
-            while (!process.StandardError.EndOfStream)
+            catch (Exception e)
             {
-                var line = process.StandardError.ReadLine();
-                Console.WriteLine(line);
+                Console.WriteLine(e.Message);
             }
-
-            process.WaitForExit();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
         }
     }
 }

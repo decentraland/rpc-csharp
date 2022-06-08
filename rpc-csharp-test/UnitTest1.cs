@@ -1,17 +1,18 @@
 using NUnit.Framework;
 
-namespace rpc_csharp_test;
-
-public class Tests
+namespace rpc_csharp_test
 {
-    [SetUp]
-    public void Setup()
+    public class Tests
     {
-    }
+        [SetUp]
+        public void Setup()
+        {
+        }
 
-    [Test]
-    public void Test1()
-    {
-        Assert.Pass();
+        [Test]
+        public void Test1()
+        {
+            Assert.Pass();
+        }
     }
 }
