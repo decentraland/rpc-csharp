@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Proto;
 
 namespace rpc_csharp_demo.example
 {
@@ -8,7 +9,7 @@ namespace rpc_csharp_demo.example
         public Book[] books;
     }
 
-    public class BookServiceImpl : BookServiceGen<BookContext>
+    public class BookServiceImpl : BookService<BookContext>
     {
         public override UniTask<Book> GetBook(GetBookRequest request, BookContext context)
         {
@@ -28,7 +29,7 @@ namespace rpc_csharp_demo.example
             return Task.FromResult(new Book()); // TODO: Implement error pipeline*/
         }
 
-        public override IEnumerator<UniTask<Book>> QueryBooks(GetBookRequest request, BookContext context)
+        public override IEnumerator<UniTask<Book>> QueryBooks(QueryBooksRequest request, BookContext context)
         {
             return context.books.Select(UniTask.FromResult).GetEnumerator();
         }
