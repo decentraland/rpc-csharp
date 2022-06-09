@@ -1,5 +1,5 @@
 using System;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using rpc_csharp;
 using WebSocketSharp.Server;
 
@@ -52,19 +52,19 @@ namespace rpc_csharp_demo.example
         {
             var context = new BookContext()
             {
-                books = new []
+                books = new[]
                 {
-                    new Book() { Author = "mr menduz", Isbn = 1234, Title = "1001 reasons to write your own OS" },
-                    new Book() { Author = "mr cazala", Isbn = 1111, Title = "Advanced CSS" },
-                    new Book() { Author = "mr mannakia", Isbn = 7666, Title = "Advanced binary packing" },
-                    new Book() { Author = "mr kuruk", Isbn = 7668, Title = "Advanced bots AI" },
+                    new Book() {Author = "mr menduz", Isbn = 1234, Title = "1001 reasons to write your own OS"},
+                    new Book() {Author = "mr cazala", Isbn = 1111, Title = "Advanced CSS"},
+                    new Book() {Author = "mr mannakia", Isbn = 7666, Title = "Advanced binary packing"},
+                    new Book() {Author = "mr kuruk", Isbn = 7668, Title = "Advanced bots AI"},
                     /*new Book() { Title = "Pato", Author = "QuiereAsado", Isbn = 1234 },
                     new Book() { Title = "Title2", Author = "Owen", Isbn = 5678 },
                     new Book() { Title = "Title3", Author = "Bardock", Isbn = 5678 },
                     new Book() { Title = "Rpc onion layers", Author = "menduz", Isbn = 19997 }*/
                 }
             };
-            
+
             Console.Write("> Creating server");
             var url = $"ws://localhost:{8080}/";
             var wss = new WebSocketServer(url);
@@ -73,11 +73,9 @@ namespace rpc_csharp_demo.example
 
             rpcServer.SetHandler((port, transport, context) =>
             {
-                BookServiceImpl service = new();
-                port.RegisterModule(service.ServiceName, (port) =>
-                {
-                    return Task.FromResult(service.GetModuleDefinition());
-                });
+                BookServiceImpl service = new BookServiceImpl();
+                port.RegisterModule(service.ServiceName,
+                    (port) => { return UniTask.FromResult(service.GetModuleDefinition()); });
             });
 
             wss.AddWebSocketService("/", () =>
