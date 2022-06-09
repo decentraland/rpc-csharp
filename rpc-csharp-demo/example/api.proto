@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package Proto;
+
 message Book {
   int64 isbn = 1;
   string title = 2;

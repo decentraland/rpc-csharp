@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using rpc_csharp;
 
 namespace rpc_csharp_test
 {
