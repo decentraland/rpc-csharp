@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net4.8</TargetFramework>
         <LangVersion>8.0</LangVersion>
         <RootNamespace>rpc_csharp</RootNamespace>
         <ImplicitUsings>disable</ImplicitUsings>
@@ -9,9 +9,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Google.Protobuf" Version="3.21.1" />
-        <PackageReference Include="UniTask" Version="2.3.1" />
-        <PackageReference Include="websocketsharp.core" Version="1.0.0" />
+        <PackageReference Include="Google.Protobuf" Version="3.21.1"/>
+        <PackageReference Include="UniTask" Version="2.3.1"/>
+        <PackageReference Include="websocketsharp.core" Version="1.0.0"/>
     </ItemGroup>
 
 </Project>
