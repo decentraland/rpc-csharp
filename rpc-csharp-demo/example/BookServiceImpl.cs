@@ -1,6 +1,5 @@
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 namespace rpc_csharp_demo.example
 {
@@ -11,9 +10,9 @@ namespace rpc_csharp_demo.example
 
     public class BookServiceImpl : BookServiceGen<BookContext>
     {
-        public override Task<Book> GetBook(GetBookRequest request, BookContext context)
+        public override UniTask<Book> GetBook(GetBookRequest request, BookContext context)
         {
-            return Task.FromResult(new Book()
+            return UniTask.FromResult(new Book()
             {
                 Author = "menduz",
                 Isbn = request.Isbn,
@@ -29,9 +28,9 @@ namespace rpc_csharp_demo.example
             return Task.FromResult(new Book()); // TODO: Implement error pipeline*/
         }
 
-        public override IEnumerator<Task<Book>> QueryBooks(GetBookRequest request, BookContext context)
+        public override IEnumerator<UniTask<Book>> QueryBooks(GetBookRequest request, BookContext context)
         {
-            return context.books.Select(Task.FromResult).GetEnumerator();
+            return context.books.Select(UniTask.FromResult).GetEnumerator();
         }
     }
 }

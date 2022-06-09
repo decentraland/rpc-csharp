@@ -1,46 +1,35 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 namespace rpc_csharp.server
 {
     public class RpcServerPort<Context> : IRpcServerPort<Context>
     {
-        /*private class ServerModuleDeclaration<Context> : IServerModuleDeclaration<Context>
-        {
-            public List<server.ServerModuleProcedure<Context>> procedures { set; get; }
-        }
+        private readonly Dictionary<string, UniTask<ServerModuleDeclaration<Context>>> loadedModules =
+            new Dictionary<string, UniTask<ServerModuleDeclaration<Context>>>();
 
-        private class ServerModuleProcedure<Context> : server.ServerModuleProcedure<Context>
-        {
-            public string procedureName { set; get; }
-            public uint procedureId { set; get; }
-            public CallableProcedureServer<Context> callable { set; get; }
-        }*/
+        private readonly Dictionary<uint, UnaryCallback<Context>> procedures =
+            new Dictionary<uint, UnaryCallback<Context>>();
 
-        private readonly Dictionary<string, Task<ServerModuleDeclaration<Context>>> loadedModules = new();
-        private readonly Dictionary<uint, UnaryCallback<Context>> procedures = new();
-        private readonly Dictionary<uint, AsyncGenerator<Context>> streamProcedures = new();
-        private readonly Dictionary<string, ModuleGeneratorFunction<Context>> registeredModules = new();
+        private readonly Dictionary<uint, AsyncGenerator<Context>> streamProcedures =
+            new Dictionary<uint, AsyncGenerator<Context>>();
+
+        private readonly Dictionary<string, ModuleGeneratorFunction<Context>> registeredModules =
+            new Dictionary<string, ModuleGeneratorFunction<Context>>();
 
         private event Action OnClose;
-        private uint portId;
-        private string portName;
+        public uint portId { get; }
+        public string portName { get; }
 
-        public static IRpcServerPort<Context> CreateServerPort(uint portId, string portName)
+        public RpcServerPort(uint portId, string portName)
         {
-            RpcServerPort<Context> port = new()
-            {
-                portId = portId,
-                portName = portName
-            };
-
-            return port;
+            this.portId = portId;
+            this.portName = portName;
         }
 
-        private async Task<ServerModuleDeclaration<Context>> LoadModuleFromGenerator(
-            Task<ServerModuleDefinition<Context>> moduleFuture)
+        private async UniTask<ServerModuleDeclaration<Context>> LoadModuleFromGenerator(
+            UniTask<ServerModuleDefinition<Context>> moduleFuture)
         {
             var module = await moduleFuture;
             var ret = new ServerModuleDeclaration<Context>()
@@ -52,7 +41,7 @@ namespace rpc_csharp.server
             {
                 while (iterator.MoveNext())
                 {
-                    var procedureId = (uint)(procedures.Count + 1);
+                    var procedureId = (uint) (procedures.Count + 1);
                     var procedureName = iterator.Current.Key;
                     var callable = iterator.Current.Value;
                     procedures.Add(procedureId, iterator.Current.Value);
@@ -64,13 +53,13 @@ namespace rpc_csharp.server
                     });
                 }
             }
-            
+
             // TODO: Refactor this copy-paste
             using (var iterator = module.streamDefinition.GetEnumerator())
             {
                 while (iterator.MoveNext())
                 {
-                    var procedureId = (uint)(procedures.Count + 1);
+                    var procedureId = (uint) (procedures.Count + 1);
                     var procedureName = iterator.Current.Key;
                     var callable = iterator.Current.Value;
                     streamProcedures.Add(procedureId, iterator.Current.Value);
@@ -107,9 +96,9 @@ namespace rpc_csharp.server
             registeredModules.Add(moduleName, moduleDefinition);
         }
 
-        Task<ServerModuleDeclaration<Context>> IRpcServerPort<Context>.LoadModule(string moduleName)
+        UniTask<ServerModuleDeclaration<Context>> IRpcServerPort<Context>.LoadModule(string moduleName)
         {
-            if (loadedModules.TryGetValue(moduleName, out Task<ServerModuleDeclaration<Context>> loadedModule))
+            if (loadedModules.TryGetValue(moduleName, out UniTask<ServerModuleDeclaration<Context>> loadedModule))
             {
                 return loadedModule;
             }
@@ -125,36 +114,36 @@ namespace rpc_csharp.server
             return moduleFuture;
         }
 
-        public IEnumerator<Task<byte[]>> CallStreamProcedure(uint procedureId, byte[] payload, Context context)
+        public IEnumerator<UniTask<byte[]>> CallStreamProcedure(uint procedureId, byte[] payload, Context context)
         {
             if (!streamProcedures.TryGetValue(procedureId, out AsyncGenerator<Context> procedure))
             {
                 throw new Exception($"procedureId ${procedureId} is missing in {portName} ({portId}))");
             }
-            
+
             var result = procedure(payload, context);
             return result;
         }
 
         // TODO: Tal vez CallStreamProcedure y CallUnaryProcedure son lo mismo
-        public Task<byte[]> CallUnaryProcedure(uint procedureId, byte[] payload, Context context)
+        public UniTask<byte[]> CallUnaryProcedure(uint procedureId, byte[] payload, Context context)
         {
             if (!procedures.TryGetValue(procedureId, out UnaryCallback<Context> procedure))
             {
                 throw new Exception($"procedureId ${procedureId} is missing in {portName} ({portId}))");
             }
-            
+
             var result = procedure(payload, context);
             return result;
         }
-        
+
         public object CallProcedure(uint procedureId, byte[] payload, Context context)
         {
             if (procedures.TryGetValue(procedureId, out UnaryCallback<Context> unaryCallback))
             {
                 return unaryCallback(payload, context);
             }
-            
+
             if (streamProcedures.TryGetValue(procedureId, out AsyncGenerator<Context> streamProcedure))
             {
                 return streamProcedure(payload, context);

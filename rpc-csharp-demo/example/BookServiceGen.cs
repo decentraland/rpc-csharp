@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 using rpc_csharp.server;
 
@@ -10,10 +10,10 @@ namespace rpc_csharp_demo.example
         public string ServiceName = "BookService";
 
         // Unary
-        public abstract Task<Book> GetBook(GetBookRequest request, Context context);
+        public abstract UniTask<Book> GetBook(GetBookRequest request, Context context);
 
         // Stream
-        public abstract IEnumerator<Task<Book>> QueryBooks(GetBookRequest request, Context context);
+        public abstract IEnumerator<UniTask<Book>> QueryBooks(GetBookRequest request, Context context);
 
         // Generated code
         public ServerModuleDefinition<Context> GetModuleDefinition()
@@ -36,15 +36,15 @@ namespace rpc_csharp_demo.example
         }
 
         // Fixed code
-        private IEnumerator<Task<byte[]>> RegisterStreamFn<T>(IEnumerator<Task<T>> generator)
+        private IEnumerator<UniTask<byte[]>> RegisterStreamFn<T>(IEnumerator<UniTask<T>> generator)
             where T : IMessage
         {
             using (var iterator = generator)
             {
                 while (iterator.MoveNext())
                 {
-                    var response = iterator.Current.Result.ToByteArray();
-                    yield return Task.FromResult(response);
+                    var response = iterator.Current.GetAwaiter().GetResult().ToByteArray();
+                    yield return UniTask.FromResult(response);
                 }
             }
         }

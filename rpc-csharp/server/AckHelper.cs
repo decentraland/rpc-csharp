@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 using rpc_csharp.protocol;
 using rpc_csharp.transport;
@@ -9,7 +9,9 @@ namespace rpc_csharp.server
 {
     public class AckHelper
     {
-        private Dictionary<string, (Action<StreamMessage>, Action<Exception>)> oneTimeCallbacks = new();
+        private Dictionary<string, (Action<StreamMessage>, Action<Exception>)> oneTimeCallbacks =
+            new Dictionary<string, (Action<StreamMessage>, Action<Exception>)>();
+
         private ITransport transport;
 
         public AckHelper(ITransport transport)
@@ -45,18 +47,18 @@ namespace rpc_csharp.server
             }
         }
 
-        public Task<StreamMessage> SendWithAck(StreamMessage data)
+        public UniTask<StreamMessage> SendWithAck(StreamMessage data)
         {
             var (_, messageNumber) = ProtocolHelpers.ParseMessageIdentifier(data.MessageIdentifier);
             var key = $"{messageNumber},{data.SequenceId}";
 
             // C#Promiches
-            var ret = new TaskCompletionSource<StreamMessage>();
-            var accept = new Action<StreamMessage>(message => { ret.SetResult(message); });
+            var ret = new UniTaskCompletionSource<StreamMessage>();
+            var accept = new Action<StreamMessage>(message => { ret.TrySetResult(message); });
             var reject = new Action<Exception>(error =>
             {
                 Console.WriteLine(error.ToString());
-                ret.SetCanceled();
+                ret.TrySetException(error);
             });
             oneTimeCallbacks.Add(key, (accept, reject));
 

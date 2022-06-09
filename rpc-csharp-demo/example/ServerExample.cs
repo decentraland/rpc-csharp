@@ -1,5 +1,5 @@
 using System;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using rpc_csharp;
 using WebSocketSharp.Server;
 
@@ -75,7 +75,7 @@ namespace rpc_csharp_demo.example
             {
                 BookServiceImpl service = new BookServiceImpl();
                 port.RegisterModule(service.ServiceName,
-                    (port) => { return Task.FromResult(service.GetModuleDefinition()); });
+                    (port) => { return UniTask.FromResult(service.GetModuleDefinition()); });
             });
 
             wss.AddWebSocketService("/", () =>
