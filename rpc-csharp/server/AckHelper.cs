@@ -9,10 +9,10 @@ namespace rpc_csharp.server
 {
     public class AckHelper
     {
-        private Dictionary<string, (Action<StreamMessage>, Action<Exception>)> oneTimeCallbacks =
+        private readonly Dictionary<string, (Action<StreamMessage>, Action<Exception>)> oneTimeCallbacks =
             new Dictionary<string, (Action<StreamMessage>, Action<Exception>)>();
 
-        private ITransport transport;
+        private readonly ITransport transport;
 
         public AckHelper(ITransport transport)
         {
@@ -52,7 +52,7 @@ namespace rpc_csharp.server
             var (_, messageNumber) = ProtocolHelpers.ParseMessageIdentifier(data.MessageIdentifier);
             var key = $"{messageNumber},{data.SequenceId}";
 
-            // C#Promiches
+            // C# Promiches
             var ret = new UniTaskCompletionSource<StreamMessage>();
             var accept = new Action<StreamMessage>(message => { ret.TrySetResult(message); });
             var reject = new Action<Exception>(error =>

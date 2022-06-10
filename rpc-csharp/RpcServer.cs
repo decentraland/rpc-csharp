@@ -1,31 +1,32 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Cysharp.Threading.Tasks;
 using Google.Protobuf;
+using Google.Protobuf.Collections;
 using rpc_csharp.protocol;
 using rpc_csharp.server;
 using rpc_csharp.transport;
 
 namespace rpc_csharp
 {
-    public class RpcServer<Context>
+    public class RpcServer<TContext>
     {
         private uint lastPortId = 0;
 
-        private Dictionary<uint, IRpcServerPort<Context>> ports = new Dictionary<uint, IRpcServerPort<Context>>();
+        private readonly Dictionary<uint, RpcServerPort<TContext>> ports =
+            new Dictionary<uint, RpcServerPort<TContext>>();
 
-        private RpcServerHandler<Context> handler;
+        private RpcServerHandler<TContext> handler;
 
         public RpcServer()
         {
         }
 
-        private IRpcServerPort<Context> HandleCreatePort(CreatePort message, uint messageNumber, Context context,
+        private RpcServerPort<TContext> HandleCreatePort(CreatePort message, uint messageNumber, TContext context,
             ITransport transport)
         {
             ++lastPortId;
-            var port = new RpcServerPort<Context>(lastPortId, message.PortName);
+            var port = new RpcServerPort<TContext>(lastPortId, message.PortName);
             ports.Add(port.portId, port);
 
             handler?.Invoke(port, transport, context);
@@ -43,8 +44,7 @@ namespace rpc_csharp
             return port;
         }
 
-        private async UniTask HandleRequestModule(RequestModule message, uint messageNumber, Context context,
-            ITransport transport)
+        private async UniTask HandleRequestModule(RequestModule message, uint messageNumber, ITransport transport)
         {
             if (!ports.TryGetValue(message.PortId, out var port))
             {
@@ -53,11 +53,22 @@ namespace rpc_csharp
 
             var loadedModule = await port.LoadModule(message.ModuleName);
 
-            var pbProcedures = loadedModule.procedures.Select(x => new ModuleProcedure()
+            var inProcedures = loadedModule.procedures;
+
+            var pbProcedures = new RepeatedField<ModuleProcedure>
             {
-                ProcedureId = x.procedureId,
-                ProcedureName = x.procedureName
-            }).ToList();
+                Capacity = inProcedures.Count
+            };
+
+            for (int i = 0; i < inProcedures.Count; i++)
+            {
+                var procedure = inProcedures[i];
+                pbProcedures.Add(new ModuleProcedure()
+                {
+                    ProcedureId = procedure.procedureId,
+                    ProcedureName = procedure.procedureName
+                });
+            }
 
             var response = new RequestModuleResponse
             {
@@ -72,7 +83,7 @@ namespace rpc_csharp
         }
 
         private async UniTask SendStream(AckHelper ackHelper, ITransport transport, uint messageNumber, uint portId,
-            IEnumerator<UniTask<byte[]>> stream)
+            IEnumerator<ByteString> stream)
         {
             uint sequenceNumber = 0;
             var reusedStreamMessage = new StreamMessage()
@@ -105,10 +116,10 @@ namespace rpc_csharp
             {
                 while (iterator.MoveNext())
                 {
-                    var elem = await iterator.Current;
+                    var elem = iterator.Current;
                     sequenceNumber++;
                     reusedStreamMessage.SequenceId = sequenceNumber;
-                    reusedStreamMessage.Payload = ByteString.CopyFrom(elem); // TODO: OPTIMIZE!
+                    reusedStreamMessage.Payload = elem;
 
                     var ret = await ackHelper.SendWithAck(reusedStreamMessage);
                     if (ret.Ack)
@@ -125,7 +136,7 @@ namespace rpc_csharp
             transport.SendMessage(ProtocolHelpers.CloseStreamMessage(messageNumber, sequenceNumber, portId));
         }
 
-        private async UniTask HandleRequest(Request message, uint messageNumber, Context context,
+        private async UniTask HandleRequest(Request message, uint messageNumber, TContext context,
             ITransport transport, AckHelper ackHelper)
         {
             if (!ports.TryGetValue(message.PortId, out var port))
@@ -133,12 +144,11 @@ namespace rpc_csharp
                 throw new InvalidOperationException($"Cannot find port {message.PortId}");
             }
 
-            // TODO: CallStreamProcedure
-            var obj = port.CallProcedure(message.ProcedureId, message.Payload.ToByteArray(), context);
+            var obj = await port.CallProcedure(message.ProcedureId, message.Payload, context);
 
-            if (obj is UniTask<byte[]> unaryProcedure)
+            if (obj is ByteString unaryProcedure)
             {
-                var res = await unaryProcedure;
+                var res = unaryProcedure;
                 var response = new Response
                 {
                     MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
@@ -150,12 +160,12 @@ namespace rpc_csharp
 
                 if (res.Length > 0)
                 {
-                    response.Payload = ByteString.CopyFrom(res);
+                    response.Payload = res;
                 }
 
                 transport.SendMessage(response.ToByteArray());
             }
-            else if (obj is IEnumerator<UniTask<byte[]>> streamProcedure)
+            else if (obj is IEnumerator<ByteString> streamProcedure)
             {
                 await SendStream(ackHelper, transport, messageNumber, port.portId, streamProcedure);
             }
@@ -165,12 +175,12 @@ namespace rpc_csharp
             }
         }
 
-        public void SetHandler(RpcServerHandler<Context> handler)
+        public void SetHandler(RpcServerHandler<TContext> handler)
         {
             this.handler = handler;
         }
 
-        public void AttachTransport(ITransport transport, Context context)
+        public void AttachTransport(ITransport transport, TContext context)
         {
             var ackHelper = new AckHelper(transport);
 
@@ -187,7 +197,7 @@ namespace rpc_csharp
                             HandleCreatePort((CreatePort) message, messageNumber, context, transport);
                             break;
                         case RpcMessageTypes.RequestModule:
-                            await HandleRequestModule((RequestModule) message, messageNumber, context, transport);
+                            await HandleRequestModule((RequestModule) message, messageNumber, transport);
                             break;
                         case RpcMessageTypes.Request:
                             await HandleRequest((Request) message, messageNumber, context, transport, ackHelper);

@@ -1,6 +1,7 @@
 using System;
 using rpc_csharp.transport;
 using WebSocketSharp.Server;
+
 public class WebSocketServerTransport : WebSocketBehavior, ITransport
 {
     protected override void OnMessage(WebSocketSharp.MessageEventArgs e)
@@ -37,8 +38,8 @@ public class WebSocketServerTransport : WebSocketBehavior, ITransport
         Sessions.CloseSession(ID);
     }
 
-    public event Action? OnCloseEvent;
-    public event Action<string>? OnErrorEvent;
-    public event Action<byte[]>? OnMessageEvent;
-    public event Action? OnConnectEvent;
+    public event Action OnCloseEvent;
+    public event Action<string> OnErrorEvent;
+    public event Action<byte[]> OnMessageEvent;
+    public event Action OnConnectEvent;
 }

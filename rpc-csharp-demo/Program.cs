@@ -1,4 +1,5 @@
-﻿using rpc_csharp_demo.example;
+﻿using System;
+using rpc_csharp_demo.example;
 
 namespace rpc_csharp_demo
 {
@@ -7,8 +8,9 @@ namespace rpc_csharp_demo
         public static void Main(string[] args)
         {
             ServerExample.Run();
-            
-            NodeClientExample.Run("rpc-test-client-js");
+            Console.ReadLine();
+
+            //NodeClientExample.Run("rpc-test-client-js");
         }
     }
 }

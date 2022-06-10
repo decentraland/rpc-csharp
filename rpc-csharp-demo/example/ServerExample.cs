@@ -67,7 +67,7 @@ namespace rpc_csharp_demo.example
             };
 
             Console.Write("> Creating server");
-            var url = $"ws://localhost:{8080}/";
+            var url = $"ws://127.0.0.1:{8080}/";
             var wss = new WebSocketServer(url);
 
             var rpcServer = new RpcServer<BookContext>();
