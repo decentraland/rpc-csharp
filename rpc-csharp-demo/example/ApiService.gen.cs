@@ -2,61 +2,30 @@
 // Type definitions for server implementations of ports.
 // package: Proto
 // file: api.proto
-// file: [{"namespace":"api_pb","path":"./api_pb"}]
-
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Google.Protobuf;
+using rpc_csharp.protocol;
 using rpc_csharp.server;
+namespace Proto {
 
-namespace Proto
+public abstract class BookService<Context>
 {
-    public abstract class BookService<Context>
-    {
-        public string ServiceName = "BookService";
+  public const string ServiceName = "BookService";
 
-        // Unary
-        public abstract UniTask<Book> GetBook(GetBookRequest request, Context context);
+  public delegate UniTask<Book> GetBook(GetBookRequest request, Context context);
 
-        // Stream
-        public abstract UniTask<IEnumerator<Book>> QueryBooks(GetBookRequest request, Context context);
+  public delegate UniTask<IEnumerator<Book>> QueryBooks(QueryBooksRequest request, Context context);
 
-        // Generated code
-        public ServerModuleDefinition<Context> GetModuleDefinition()
-        {
-            var result = new ServerModuleDefinition<Context>();
+  public static void RegisterService(RpcServerPort<Context> port, GetBook getBook, QueryBooks queryBooks)
+  {
+    var result = new ServerModuleDefinition<Context>();
+      
+    result.definition.Add("GetBook", async (payload, context) => { var res = await getBook(GetBookRequest.Parser.ParseFrom(payload), context); return res?.ToByteString(); });
+    result.streamDefinition.Add("QueryBooks", async (payload, context) => { return ProtocolHelpers.SerializeMessageEnumerator(await queryBooks(QueryBooksRequest.Parser.ParseFrom(payload), context)); });
 
-            result.definition.Add("GetBook",
-                async (payload, context) =>
-                {
-                    var book = await GetBook(GetBookRequest.Parser.ParseFrom(payload), context);
-                    return book?.ToByteString();
-                });
-
-            result.streamDefinition.Add("QueryBooks",
-                async (payload, context) =>
-                {
-                    var iterator = await QueryBooks(GetBookRequest.Parser.ParseFrom(payload), context);
-                    return RegisterStreamFn(iterator);
-                });
-
-            return result;
-        }
-
-        private IEnumerator<ByteString> RegisterStreamFn<T>(IEnumerator<T> generator)
-            where T : IMessage
-        {
-            using (var iterator = generator)
-            {
-                while (iterator.MoveNext())
-                {
-                    var current = iterator.Current;
-                    if (current != null)
-                    {
-                        yield return current.ToByteString();
-                    }
-                }
-            }
-        }
-    }
+    port.RegisterModule(ServiceName, (port) => UniTask.FromResult(result));
+  }
+    
+}
 }

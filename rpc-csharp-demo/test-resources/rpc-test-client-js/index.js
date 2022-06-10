@@ -34669,7 +34669,7 @@ const server_1 = __nccwpck_require__(6660); // Just to check equality
 const createBookServiceClient = (clientPort) => (0, codegen_1.loadService)(clientPort, api_1.BookServiceDefinition);
 exports.createBookServiceClient = createBookServiceClient;
 const runClient = () => {
-    const ws = new ws_1.default("ws://localhost:8080/");
+    const ws = new ws_1.default("ws://127.0.0.1:8080/");
     const clientSocket = (0, WebSocket_1.WebSocketTransport)(ws);
     // 4th step: create a client connection
     console.log("> Creating client");

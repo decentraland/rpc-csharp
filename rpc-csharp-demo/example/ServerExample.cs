@@ -74,9 +74,7 @@ namespace rpc_csharp_demo.example
 
             rpcServer.SetHandler((port, transport, context) =>
             {
-                BookServiceImpl service = new BookServiceImpl();
-                port.RegisterModule(service.ServiceName,
-                    (port) => { return UniTask.FromResult(service.GetModuleDefinition()); });
+                BookServiceImpl.RegisterService(port);
             });
 
             wss.AddWebSocketService("/", () =>
