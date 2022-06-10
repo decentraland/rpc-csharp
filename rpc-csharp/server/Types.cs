@@ -12,9 +12,9 @@ namespace rpc_csharp.server
         TContext context
     );
 
-    public delegate UniTask<ByteString> UnaryCallback<in TContext>(ByteString payload, TContext context);
+    public delegate ByteString UnaryCallback<in TContext>(ByteString payload, TContext context);
 
-    public delegate UniTask<IEnumerator<ByteString>> AsyncGenerator<in TContext>(ByteString payload,
+    public delegate IEnumerator<ByteString> StreamCallback<in TContext>(ByteString payload,
         TContext context);
 
     public delegate UniTask<ServerModuleDefinition<TContext>> ModuleGeneratorFunction<TContext>(
@@ -25,20 +25,24 @@ namespace rpc_csharp.server
         public readonly Dictionary<string, UnaryCallback<TContext>> definition =
             new Dictionary<string, UnaryCallback<TContext>>();
 
-        public readonly Dictionary<string, AsyncGenerator<TContext>> streamDefinition =
-            new Dictionary<string, AsyncGenerator<TContext>>();
+        public readonly Dictionary<string, StreamCallback<TContext>> streamDefinition =
+            new Dictionary<string, StreamCallback<TContext>>();
     }
 
-    public class ServerModuleProcedure<TContext>
+    public readonly struct ServerModuleProcedureInfo
     {
-        public string procedureName;
-        public uint procedureId;
-        public UnaryCallback<TContext> callable;
-        public AsyncGenerator<TContext> asyncCallable;
+        public readonly string procedureName;
+        public readonly uint procedureId;
+
+        public ServerModuleProcedureInfo(uint procedureId, string procedureName)
+        {
+            this.procedureId = procedureId;
+            this.procedureName = procedureName;
+        }
     }
 
-    public class ServerModuleDeclaration<TContext>
+    public class ServerModuleDeclaration
     {
-        public List<ServerModuleProcedure<TContext>> procedures;
+        public List<ServerModuleProcedureInfo> procedures;
     }
 }

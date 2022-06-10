@@ -2,30 +2,40 @@
 // Type definitions for server implementations of ports.
 // package: Proto
 // file: api.proto
+
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 using rpc_csharp.protocol;
 using rpc_csharp.server;
-namespace Proto {
 
-public abstract class BookService<Context>
+namespace Proto
 {
-  public const string ServiceName = "BookService";
+    public abstract class BookService<Context>
+    {
+        public const string ServiceName = "BookService";
 
-  public delegate UniTask<Book> GetBook(GetBookRequest request, Context context);
+        public delegate Book GetBook(GetBookRequest request, Context context);
 
-  public delegate UniTask<IEnumerator<Book>> QueryBooks(QueryBooksRequest request, Context context);
+        public delegate IEnumerator<Book> QueryBooks(QueryBooksRequest request, Context context);
 
-  public static void RegisterService(RpcServerPort<Context> port, GetBook getBook, QueryBooks queryBooks)
-  {
-    var result = new ServerModuleDefinition<Context>();
-      
-    result.definition.Add("GetBook", async (payload, context) => { var res = await getBook(GetBookRequest.Parser.ParseFrom(payload), context); return res?.ToByteString(); });
-    result.streamDefinition.Add("QueryBooks", async (payload, context) => { return ProtocolHelpers.SerializeMessageEnumerator(await queryBooks(QueryBooksRequest.Parser.ParseFrom(payload), context)); });
+        public static void RegisterService(RpcServerPort<Context> port, GetBook getBook, QueryBooks queryBooks)
+        {
+            var result = new ServerModuleDefinition<Context>();
 
-    port.RegisterModule(ServiceName, (port) => UniTask.FromResult(result));
-  }
-    
-}
+            result.definition.Add("GetBook", (payload, context) =>
+            {
+                var res = getBook(GetBookRequest.Parser.ParseFrom(payload), context);
+                return res?.ToByteString();
+            });
+            result.streamDefinition.Add("QueryBooks",
+                (payload, context) =>
+                {
+                    return ProtocolHelpers.SerializeMessageEnumerator(queryBooks(QueryBooksRequest.Parser.ParseFrom(payload),
+                        context));
+                });
+
+            port.RegisterModule(ServiceName, (port) => UniTask.FromResult(result));
+        }
+    }
 }

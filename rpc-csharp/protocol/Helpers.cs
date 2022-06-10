@@ -3,22 +3,27 @@ using Google.Protobuf;
 
 namespace rpc_csharp.protocol
 {
-    public class ProtocolHelpers
+    public static class ProtocolHelpers
     {
-        public static byte[] CloseStreamMessage(uint messageNumber, uint sequenceId, uint portId) {
-            return new StreamMessage()
-            {
-                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
-                    RpcMessageTypes.StreamMessage,
-                    messageNumber
-                ),
-                Closed = true,
-                Ack = false,
-                Payload = ByteString.Empty,
-                PortId = portId,
-                SequenceId = sequenceId
-            }.ToByteArray();
+        private static readonly StreamMessage reusableStreamMessage = new StreamMessage()
+        {
+            Closed = true,
+            Ack = false,
+            Payload = ByteString.Empty,
+        };
+
+        public static byte[] CloseStreamMessage(uint messageNumber, uint sequenceId, uint portId)
+        {
+            reusableStreamMessage.MessageIdentifier = CalculateMessageIdentifier(
+                RpcMessageTypes.StreamMessage,
+                messageNumber
+            );
+            reusableStreamMessage.PortId = portId;
+            reusableStreamMessage.SequenceId = sequenceId;
+
+            return reusableStreamMessage.ToByteArray();
         }
+
         // @internal
         public static (RpcMessageTypes, uint) ParseMessageIdentifier(uint value)
         {
@@ -28,12 +33,11 @@ namespace rpc_csharp.protocol
         // @internal
         public static uint CalculateMessageIdentifier(RpcMessageTypes messageType, uint messageNumber)
         {
-            return (((uint)messageType & 0xf) << 27) | (messageNumber & 0x07ffffff);
+            return (((uint) messageType & 0xf) << 27) | (messageNumber & 0x07ffffff);
         }
 
         public static (RpcMessageTypes, object, uint)? ParseProtocolMessage(byte[] data)
         {
-            
             var header = RpcMessageHeader.Parser.ParseFrom(data);
             var (messageType, messageNumber) = ParseMessageIdentifier(header.MessageIdentifier);
 
@@ -65,7 +69,7 @@ namespace rpc_csharp.protocol
 
             return null;
         }
-        
+
         public static IEnumerator<ByteString> SerializeMessageEnumerator<T>(IEnumerator<T> generator)
             where T : IMessage
         {

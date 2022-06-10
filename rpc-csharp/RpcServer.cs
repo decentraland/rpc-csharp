@@ -17,6 +17,13 @@ namespace rpc_csharp
             new Dictionary<uint, RpcServerPort<TContext>>();
 
         private RpcServerHandler<TContext> handler;
+        
+        private static StreamMessage reusedStreamMessage = new StreamMessage()
+        {
+            Closed = false,
+            Ack = false,
+            Payload = ByteString.Empty
+        };        
 
         public RpcServer()
         {
@@ -60,7 +67,8 @@ namespace rpc_csharp
                 Capacity = inProcedures.Count
             };
 
-            for (int i = 0; i < inProcedures.Count; i++)
+            int inProceduresCount = inProcedures.Count;
+            for (int i = 0; i < inProceduresCount; i++)
             {
                 var procedure = inProcedures[i];
                 pbProcedures.Add(new ModuleProcedure()
@@ -82,22 +90,22 @@ namespace rpc_csharp
             transport.SendMessage(response.ToByteArray());
         }
 
-        private async UniTask SendStream(AckHelper ackHelper, ITransport transport, uint messageNumber, uint portId,
+        private static async UniTask SendStream(AckHelper ackHelper, ITransport transport, uint messageNumber,
+            uint portId,
             IEnumerator<ByteString> stream)
         {
             uint sequenceNumber = 0;
-            var reusedStreamMessage = new StreamMessage()
-            {
-                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
-                    RpcMessageTypes.StreamMessage,
-                    messageNumber
-                ),
-                Closed = false,
-                Ack = false,
-                Payload = ByteString.Empty,
-                PortId = portId,
-                SequenceId = sequenceNumber
-            };
+
+            // reset stream message
+            reusedStreamMessage.MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                RpcMessageTypes.StreamMessage,
+                messageNumber
+            );
+            reusedStreamMessage.Closed = false;
+            reusedStreamMessage.Ack = false;
+            reusedStreamMessage.Payload = ByteString.Empty;
+            reusedStreamMessage.PortId = portId;
+            reusedStreamMessage.SequenceId = sequenceNumber;            
 
             // First, tell the client that we are opening a stream. Once the client sends
             // an ACK, we will know if they are ready to consume the first element.
@@ -144,30 +152,24 @@ namespace rpc_csharp
                 throw new InvalidOperationException($"Cannot find port {message.PortId}");
             }
 
-            var obj = await port.CallProcedure(message.ProcedureId, message.Payload, context);
-
-            if (obj is ByteString unaryProcedure)
+            if (port.TryCallUnaryProcedure(message.ProcedureId, message.Payload, context,
+                out ByteString unaryCallResult))
             {
-                var res = unaryProcedure;
                 var response = new Response
                 {
                     MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
                         RpcMessageTypes.Response,
                         messageNumber
                     ),
-                    Payload = ByteString.Empty
+                    Payload = unaryCallResult
                 };
-
-                if (res.Length > 0)
-                {
-                    response.Payload = res;
-                }
 
                 transport.SendMessage(response.ToByteArray());
             }
-            else if (obj is IEnumerator<ByteString> streamProcedure)
+            else if (port.TryCallStreamProcedure(message.ProcedureId, message.Payload, context,
+                out IEnumerator<ByteString> streamResult))
             {
-                await SendStream(ackHelper, transport, messageNumber, port.portId, streamProcedure);
+                await SendStream(ackHelper, transport, messageNumber, port.portId, streamResult);
             }
             else
             {
