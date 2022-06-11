@@ -7,20 +7,21 @@ namespace rpc_csharp.server
 {
     public class RpcServerPort<TContext>
     {
-        private readonly Dictionary<string, UniTask<ServerModuleDeclaration<TContext>>> loadedModules =
-            new Dictionary<string, UniTask<ServerModuleDeclaration<TContext>>>();
+        private readonly Dictionary<string, UniTask<ServerModuleDeclaration>> loadedModules =
+            new Dictionary<string, UniTask<ServerModuleDeclaration>>();
 
-        //UnaryCallback<TContext> | AsyncGenerator<TContext>
         private readonly Dictionary<uint, UnaryCallback<TContext>> procedures =
             new Dictionary<uint, UnaryCallback<TContext>>();
 
-        private readonly Dictionary<uint, AsyncGenerator<TContext>> streamProcedures =
-            new Dictionary<uint, AsyncGenerator<TContext>>();
+        private readonly Dictionary<uint, StreamCallback<TContext>> streamProcedures =
+            new Dictionary<uint, StreamCallback<TContext>>();
 
         private readonly Dictionary<string, ModuleGeneratorFunction<TContext>> registeredModules =
             new Dictionary<string, ModuleGeneratorFunction<TContext>>();
 
-        private event Action OnClose;
+        private uint proceduresCount = 0;
+
+        public event Action OnClose;
         public uint portId { get; }
         public string portName { get; }
 
@@ -50,9 +51,9 @@ namespace rpc_csharp.server
             registeredModules.Add(moduleName, moduleDefinition);
         }
 
-        public UniTask<ServerModuleDeclaration<TContext>> LoadModule(string moduleName)
+        public UniTask<ServerModuleDeclaration> LoadModule(string moduleName)
         {
-            if (loadedModules.TryGetValue(moduleName, out UniTask<ServerModuleDeclaration<TContext>> loadedModule))
+            if (loadedModules.TryGetValue(moduleName, out UniTask<ServerModuleDeclaration> loadedModule))
             {
                 return loadedModule;
             }
@@ -68,66 +69,69 @@ namespace rpc_csharp.server
             return moduleFuture;
         }
 
-        public async UniTask<object> CallProcedure(uint procedureId, ByteString payload, TContext context)
+        public bool TryCallUnaryProcedure(uint procedureId, ByteString payload, TContext context, out ByteString result)
         {
             if (procedures.TryGetValue(procedureId, out UnaryCallback<TContext> unaryCallback))
             {
-                return await unaryCallback(payload, context);
+                result = unaryCallback(payload, context);
+                return true;
             }
 
-            if (streamProcedures.TryGetValue(procedureId, out AsyncGenerator<TContext> streamProcedure))
-            {
-                return await streamProcedure(payload, context);
-            }
-
-            throw new Exception($"procedureId ${procedureId} is missing in {portName} ({portId}))");
+            result = ByteString.Empty;
+            return false;
         }
 
-        private async UniTask<ServerModuleDeclaration<TContext>> LoadModuleFromGenerator(
+        public bool TryCallStreamProcedure(uint procedureId, ByteString payload, TContext context,
+            out IEnumerator<ByteString> result)
+        {
+            if (streamProcedures.TryGetValue(procedureId, out StreamCallback<TContext> streamProcedure))
+            {
+                result = streamProcedure(payload, context);
+                return true;
+            }
+
+            result = default;
+            return false;
+        }
+
+        private async UniTask<ServerModuleDeclaration> LoadModuleFromGenerator(
             UniTask<ServerModuleDefinition<TContext>> moduleFuture)
         {
             var module = await moduleFuture;
-            var ret = new ServerModuleDeclaration<TContext>()
+
+            var moduleUnaryDefinitions = module.definition;
+            var moduleStreamDefinitions = module.streamDefinition;
+
+            var ret = new ServerModuleDeclaration()
             {
-                procedures = new List<ServerModuleProcedure<TContext>>()
+                procedures =
+                    new List<ServerModuleProcedureInfo>(moduleUnaryDefinitions.Count + moduleStreamDefinitions.Count)
             };
 
-            using (var iterator = module.definition.GetEnumerator())
+            using (var iterator = moduleUnaryDefinitions.GetEnumerator())
             {
-                while (iterator.MoveNext())
-                {
-                    var procedureId = (uint) (procedures.Count + 1);
-                    var procedureName = iterator.Current.Key;
-                    var callable = iterator.Current.Value;
-                    procedures.Add(procedureId, iterator.Current.Value);
-                    ret.procedures.Add(new ServerModuleProcedure<TContext>()
-                    {
-                        procedureName = procedureName,
-                        callable = callable,
-                        procedureId = procedureId,
-                    });
-                }
+                LoadProcedures(iterator, procedures, ret.procedures);
             }
 
-            // TODO: Refactor this copy-paste
-            using (var iterator = module.streamDefinition.GetEnumerator())
+            using (var iterator = moduleStreamDefinitions.GetEnumerator())
             {
-                while (iterator.MoveNext())
-                {
-                    var procedureId = (uint) (procedures.Count + 1);
-                    var procedureName = iterator.Current.Key;
-                    var callable = iterator.Current.Value;
-                    streamProcedures.Add(procedureId, iterator.Current.Value);
-                    ret.procedures.Add(new ServerModuleProcedure<TContext>()
-                    {
-                        procedureName = procedureName,
-                        asyncCallable = callable,
-                        procedureId = procedureId,
-                    });
-                }
+                LoadProcedures(iterator, streamProcedures, ret.procedures);
             }
 
             return ret;
+        }
+
+        private void LoadProcedures<T>(IEnumerator<KeyValuePair<string, T>> procedureDefinition,
+            IDictionary<uint, T> procedureMap, ICollection<ServerModuleProcedureInfo> infoList)
+        {
+            while (procedureDefinition.MoveNext())
+            {
+                var procedureId = proceduresCount++;
+                var procedureName = procedureDefinition.Current.Key;
+                procedureMap.Add(procedureId, procedureDefinition.Current.Value);
+
+                infoList.Add(new ServerModuleProcedureInfo(procedureId, procedureName));
+            }
         }
     }
 }

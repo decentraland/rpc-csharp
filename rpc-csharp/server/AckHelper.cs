@@ -29,9 +29,13 @@ namespace rpc_csharp.server
 
         private void CloseAll(Exception err)
         {
-            foreach (var (_, reject) in oneTimeCallbacks.Values)
+            using (var iterator = oneTimeCallbacks.Values.GetEnumerator())
             {
-                reject(err);
+                while (iterator.MoveNext())
+                {
+                    // reject
+                    iterator.Current.Item2(err);
+                }
             }
 
             oneTimeCallbacks.Clear();
