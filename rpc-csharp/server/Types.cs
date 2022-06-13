@@ -12,7 +12,7 @@ namespace rpc_csharp.server
         TContext context
     );
 
-    public delegate ByteString UnaryCallback<in TContext>(ByteString payload, TContext context);
+    public delegate UniTask<ByteString> UnaryCallback<in TContext>(ByteString payload, TContext context);
 
     public delegate IEnumerator<ByteString> StreamCallback<in TContext>(ByteString payload,
         TContext context);

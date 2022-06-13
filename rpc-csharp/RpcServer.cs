@@ -17,13 +17,13 @@ namespace rpc_csharp
             new Dictionary<uint, RpcServerPort<TContext>>();
 
         private RpcServerHandler<TContext> handler;
-        
+
         private static StreamMessage reusedStreamMessage = new StreamMessage()
         {
             Closed = false,
             Ack = false,
             Payload = ByteString.Empty
-        };        
+        };
 
         public RpcServer()
         {
@@ -105,7 +105,7 @@ namespace rpc_csharp
             reusedStreamMessage.Ack = false;
             reusedStreamMessage.Payload = ByteString.Empty;
             reusedStreamMessage.PortId = portId;
-            reusedStreamMessage.SequenceId = sequenceNumber;            
+            reusedStreamMessage.SequenceId = sequenceNumber;
 
             // First, tell the client that we are opening a stream. Once the client sends
             // an ACK, we will know if they are ready to consume the first element.
@@ -152,8 +152,10 @@ namespace rpc_csharp
                 throw new InvalidOperationException($"Cannot find port {message.PortId}");
             }
 
-            if (port.TryCallUnaryProcedure(message.ProcedureId, message.Payload, context,
-                out ByteString unaryCallResult))
+            var (unaryCallSuccess, unaryCallResult) =
+                await port.TryCallUnaryProcedure(message.ProcedureId, message.Payload, context);
+
+            if (unaryCallSuccess)
             {
                 var response = new Response
                 {
@@ -161,7 +163,7 @@ namespace rpc_csharp
                         RpcMessageTypes.Response,
                         messageNumber
                     ),
-                    Payload = unaryCallResult
+                    Payload = unaryCallResult ?? ByteString.Empty
                 };
 
                 transport.SendMessage(response.ToByteArray());
