@@ -212,9 +212,6 @@ namespace rpc_csharp
                             Console.WriteLine("Not implemented message: " + messageType);
                             break;
                     }
-
-                    //var key = $"{messageNumber},{header}";
-                    Console.WriteLine("MessageNumber: " + messageNumber);
                 }
             };
         }
