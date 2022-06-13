@@ -15,7 +15,7 @@ namespace Proto
     {
         public const string ServiceName = "BookService";
 
-        public delegate Book GetBook(GetBookRequest request, Context context);
+        public delegate UniTask<Book> GetBook(GetBookRequest request, Context context);
 
         public delegate IEnumerator<Book> QueryBooks(QueryBooksRequest request, Context context);
 
@@ -23,15 +23,16 @@ namespace Proto
         {
             var result = new ServerModuleDefinition<Context>();
 
-            result.definition.Add("GetBook", (payload, context) =>
+            result.definition.Add("GetBook", async (payload, context) =>
             {
-                var res = getBook(GetBookRequest.Parser.ParseFrom(payload), context);
+                var res = await getBook(GetBookRequest.Parser.ParseFrom(payload), context);
                 return res?.ToByteString();
             });
             result.streamDefinition.Add("QueryBooks",
                 (payload, context) =>
                 {
-                    return ProtocolHelpers.SerializeMessageEnumerator(queryBooks(QueryBooksRequest.Parser.ParseFrom(payload),
+                    return ProtocolHelpers.SerializeMessageEnumerator(queryBooks(
+                        QueryBooksRequest.Parser.ParseFrom(payload),
                         context));
                 });
 

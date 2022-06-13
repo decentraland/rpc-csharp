@@ -14,7 +14,7 @@ namespace rpc_csharp_demo.example
         public static void RegisterService(RpcServerPort<BookContext> port)
         {
             BookService<BookContext>.RegisterService(port,
-                (request, context) =>
+                async (request, context) =>
                 {
                     return new Book()
                     {

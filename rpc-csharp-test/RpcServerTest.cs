@@ -1,5 +1,4 @@
 using System.Linq;
-using System.Threading.Tasks;
 using Google.Protobuf;
 using NUnit.Framework;
 using Proto;
@@ -14,7 +13,7 @@ namespace rpc_csharp_test
         private ITransport client;
         private ITransport server;
         private BookContext context;
-        
+
         internal class BookContext
         {
             public Book[] books;
@@ -24,7 +23,7 @@ namespace rpc_csharp_test
         public void Setup()
         {
             (client, server) = MemoryTransport.Create();
-            
+
             context = new BookContext()
             {
                 books = new[]
@@ -41,7 +40,7 @@ namespace rpc_csharp_test
             rpcServer.SetHandler((port, transport, testContext) =>
             {
                 BookService<BookContext>.RegisterService(port,
-                    (request, context) =>
+                    async (request, context) =>
                     {
                         foreach (var book in context.books)
                         {
@@ -81,7 +80,7 @@ namespace rpc_csharp_test
 
             var parsedResponse = CreatePortResponse.Parser.ParseFrom(response);
             Assert.True(expectedResponse.Equals(parsedResponse));
-            
+
             Assert.True(clientWrapper.GetMessagesCount() == 0);
         }
 
@@ -121,8 +120,8 @@ namespace rpc_csharp_test
                 }
             };
             var parsedResponse = RequestModuleResponse.Parser.ParseFrom(response);
-            Assert.True(expectedResponse.Equals(parsedResponse));      
-            
+            Assert.True(expectedResponse.Equals(parsedResponse));
+
             Assert.True(clientWrapper.GetMessagesCount() == 0);
         }
 
@@ -132,7 +131,7 @@ namespace rpc_csharp_test
             var clientWrapper = new TransportAsyncWrapper(client);
             CreatePort(clientWrapper);
         }
-        
+
         [Test]
         public void ShouldModuleBeLoaded()
         {
@@ -154,10 +153,10 @@ namespace rpc_csharp_test
         {
             var clientWrapper = new TransportAsyncWrapper(client);
             SetupTestEnvironment(clientWrapper);
-            
+
             var payload = new GetBookRequest()
             {
-                Isbn =  7669 // mr pato
+                Isbn = 7669 // mr pato
             };
             var request = new Request()
             {
@@ -187,16 +186,16 @@ namespace rpc_csharp_test
             };
             var parsedResponse = Response.Parser.ParseFrom(response);
             Assert.True(expectedResponse.Equals(parsedResponse));
-            
+
             Assert.True(clientWrapper.GetMessagesCount() == 0);
         }
-        
+
         [Test]
         public void ShouldServiceResponseStreamMessages()
         {
             var clientWrapper = new TransportAsyncWrapper(client);
             SetupTestEnvironment(clientWrapper);
-            
+
             var payload = new QueryBooksRequest()
             {
                 AuthorPrefix = "mr"
@@ -232,11 +231,11 @@ namespace rpc_csharp_test
 
             // Client StreamMessage ACK
             TestUtils.ClientSendStreamMessageAck(client, 2, 1, 0);
-            
+
             // Accumulate answers
             for (uint i = 0; i < context.books.Length; ++i)
             {
-                TestUtils.ClientSendStreamMessageAck(client, 2, 1, i+1);
+                TestUtils.ClientSendStreamMessageAck(client, 2, 1, i + 1);
             }
 
             for (uint i = 0; i < context.books.Length; ++i)
@@ -250,13 +249,13 @@ namespace rpc_csharp_test
                     ),
                     PortId = 1,
                     Ack = false,
-                    SequenceId = i+1,
+                    SequenceId = i + 1,
                     Payload = context.books[i].ToByteString()
                 };
                 var parsedStreamResponse = StreamMessage.Parser.ParseFrom(streamResponse);
                 Assert.True(expectedStreamResponse.Equals(parsedStreamResponse));
             }
-            
+
             // Get Close Stream Message
             {
                 var response = clientWrapper.GetNextMessage().GetAwaiter().GetResult();
@@ -267,14 +266,14 @@ namespace rpc_csharp_test
                         2
                     ),
                     Ack = false,
-                    SequenceId = (uint)context.books.Length,
+                    SequenceId = (uint) context.books.Length,
                     Closed = true,
                     PortId = 1
                 };
                 var parsedResponse = StreamMessage.Parser.ParseFrom(response);
                 Assert.True(expectedResponse.Equals(parsedResponse));
             }
-            
+
             Assert.True(clientWrapper.GetMessagesCount() == 0);
         }
     }

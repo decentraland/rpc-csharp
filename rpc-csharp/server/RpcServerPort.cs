@@ -69,16 +69,14 @@ namespace rpc_csharp.server
             return moduleFuture;
         }
 
-        public bool TryCallUnaryProcedure(uint procedureId, ByteString payload, TContext context, out ByteString result)
+        public async UniTask<(bool called, ByteString result)> TryCallUnaryProcedure(uint procedureId,
+            ByteString payload, TContext context)
         {
-            if (procedures.TryGetValue(procedureId, out UnaryCallback<TContext> unaryCallback))
-            {
-                result = unaryCallback(payload, context);
-                return true;
-            }
+            if (!procedures.TryGetValue(procedureId, out UnaryCallback<TContext> unaryCallback))
+                return (called: false, result: null);
 
-            result = ByteString.Empty;
-            return false;
+            var result = await unaryCallback(payload, context);
+            return (called: true, result);
         }
 
         public bool TryCallStreamProcedure(uint procedureId, ByteString payload, TContext context,
