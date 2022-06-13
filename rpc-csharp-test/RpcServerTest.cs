@@ -81,6 +81,8 @@ namespace rpc_csharp_test
 
             var parsedResponse = CreatePortResponse.Parser.ParseFrom(response);
             Assert.True(expectedResponse.Equals(parsedResponse));
+            
+            Assert.True(clientWrapper.GetMessagesCount() == 0);
         }
 
         public void LoadModule(TransportAsyncWrapper clientWrapper)
@@ -119,7 +121,9 @@ namespace rpc_csharp_test
                 }
             };
             var parsedResponse = RequestModuleResponse.Parser.ParseFrom(response);
-            Assert.True(expectedResponse.Equals(parsedResponse));            
+            Assert.True(expectedResponse.Equals(parsedResponse));      
+            
+            Assert.True(clientWrapper.GetMessagesCount() == 0);
         }
 
         [Test]
@@ -183,6 +187,8 @@ namespace rpc_csharp_test
             };
             var parsedResponse = Response.Parser.ParseFrom(response);
             Assert.True(expectedResponse.Equals(parsedResponse));
+            
+            Assert.True(clientWrapper.GetMessagesCount() == 0);
         }
         
         [Test]
@@ -207,21 +213,23 @@ namespace rpc_csharp_test
             };
             client.SendMessage(request.ToByteArray());
 
-            var response = clientWrapper.GetNextMessage().GetAwaiter().GetResult();
-            var expectedResponse = new StreamMessage
             {
-                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
-                    RpcMessageTypes.StreamMessage,
-                    2
-                ),
-                Ack = false,
-                SequenceId = 0,
-                Closed = false,
-                PortId = 1
-            };
-            var parsedResponse = StreamMessage.Parser.ParseFrom(response);
-            Assert.True(expectedResponse.Equals(parsedResponse));
-            
+                var response = clientWrapper.GetNextMessage().GetAwaiter().GetResult();
+                var expectedResponse = new StreamMessage
+                {
+                    MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                        RpcMessageTypes.StreamMessage,
+                        2
+                    ),
+                    Ack = false,
+                    SequenceId = 0,
+                    Closed = false,
+                    PortId = 1
+                };
+                var parsedResponse = StreamMessage.Parser.ParseFrom(response);
+                Assert.True(expectedResponse.Equals(parsedResponse));
+            }
+
             // Client StreamMessage ACK
             TestUtils.ClientSendStreamMessageAck(client, 2, 1, 0);
             
@@ -248,6 +256,26 @@ namespace rpc_csharp_test
                 var parsedStreamResponse = StreamMessage.Parser.ParseFrom(streamResponse);
                 Assert.True(expectedStreamResponse.Equals(parsedStreamResponse));
             }
+            
+            // Get Close Stream Message
+            {
+                var response = clientWrapper.GetNextMessage().GetAwaiter().GetResult();
+                var expectedResponse = new StreamMessage
+                {
+                    MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                        RpcMessageTypes.StreamMessage,
+                        2
+                    ),
+                    Ack = false,
+                    SequenceId = (uint)context.books.Length,
+                    Closed = true,
+                    PortId = 1
+                };
+                var parsedResponse = StreamMessage.Parser.ParseFrom(response);
+                Assert.True(expectedResponse.Equals(parsedResponse));
+            }
+            
+            Assert.True(clientWrapper.GetMessagesCount() == 0);
         }
     }
 }

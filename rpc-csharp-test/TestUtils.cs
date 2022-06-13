@@ -30,6 +30,11 @@ namespace rpc_csharp_test
             
         private List<UniTaskCompletionSource<byte[]>> messages = new List<UniTaskCompletionSource<byte[]>>();
 
+        public int GetMessagesCount()
+        {
+            return messages.Count;
+        }
+
         public TransportAsyncWrapper(ITransport transport)
         {
             this.transport = transport;
