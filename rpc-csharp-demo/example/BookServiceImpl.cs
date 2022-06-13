@@ -1,6 +1,6 @@
 using System.Linq;
 using Proto;
-using rpc_csharp.server;
+using rpc_csharp;
 
 namespace rpc_csharp_demo.example
 {

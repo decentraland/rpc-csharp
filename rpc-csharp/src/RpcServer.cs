@@ -4,7 +4,6 @@ using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 using Google.Protobuf.Collections;
 using rpc_csharp.protocol;
-using rpc_csharp.server;
 using rpc_csharp.transport;
 
 namespace rpc_csharp

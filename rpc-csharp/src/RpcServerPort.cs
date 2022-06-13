@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 
-namespace rpc_csharp.server
+namespace rpc_csharp
 {
     public class RpcServerPort<TContext>
     {
