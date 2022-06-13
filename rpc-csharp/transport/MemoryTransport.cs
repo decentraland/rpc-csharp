@@ -5,6 +5,12 @@ namespace rpc_csharp.transport
     public class MemoryTransport : ITransport
     {
         private MemoryTransport sender;
+
+        private MemoryTransport()
+        {
+            
+        }
+
         public static (ITransport, ITransport) Create()
         {
             var client = new MemoryTransport();
