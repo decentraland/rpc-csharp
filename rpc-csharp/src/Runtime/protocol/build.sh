@@ -2,7 +2,7 @@
 
 # replace this with your own protoc
 protoc \
-		--csharp_out="$(PWD)/protocol" \
+		--csharp_out="$(PWD)" \
 		--csharp_opt=file_extension=.gen.cs \
-		-I="$(PWD)/protocol" \
-		"$(PWD)/protocol/index.proto"
+		-I="$(PWD)" \
+		"$(PWD)/index.proto"
