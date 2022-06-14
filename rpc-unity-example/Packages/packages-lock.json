@@ -8,7 +8,7 @@
       "hash": "9e2163616b9c527fa9461544e2bcc5f93fd12d83"
     },
     "com.decentraland.rpc-csharp": {
-      "version": "file:/Users/mateomiccino/decentraland/rpc-csharp/rpc-csharp/src",
+      "version": "file:/../rpc-csharp/src",
       "depth": 0,
       "source": "local",
       "dependencies": {}
