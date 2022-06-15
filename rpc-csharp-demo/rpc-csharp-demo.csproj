@@ -7,6 +7,7 @@
         <RootNamespace>rpc_csharp_demo</RootNamespace>
         <ImplicitUsings>disable</ImplicitUsings>
         <Nullable>disable</Nullable>
+        <DefineConstants>GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
@@ -35,5 +36,9 @@
     <ItemGroup>
         <PackageReference Include="UniTask" Version="2.3.1" />
     </ItemGroup>
+
+    <Target Name="protogen" BeforeTargets="BeforeBuild">
+        <Exec WorkingDirectory="$(ProjectDir)example/" Command="./build.sh" />
+    </Target>
 
 </Project>
