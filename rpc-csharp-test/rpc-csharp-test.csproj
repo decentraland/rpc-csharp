@@ -5,8 +5,8 @@
         <LangVersion>8.0</LangVersion>
         <RootNamespace>rpc_csharp_test</RootNamespace>
         <Nullable>disable</Nullable>
-
         <IsPackable>false</IsPackable>
+        <DefineConstants>GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,4 +21,8 @@
       <ProjectReference Include="..\rpc-csharp\rpc-csharp.csproj" />
     </ItemGroup>
 
+    <Target Name="protogen" BeforeTargets="BeforeBuild">
+        <Exec WorkingDirectory="$(ProjectDir)codegen/" Command="./build.sh" />
+    </Target>
+    
 </Project>

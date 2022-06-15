@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 using rpc_csharp.transport;
 
-namespace rpc_csharp.server
+namespace rpc_csharp
 {
     public delegate void RpcServerHandler<TContext>
     (

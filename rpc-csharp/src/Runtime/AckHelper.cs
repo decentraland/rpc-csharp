@@ -5,7 +5,7 @@ using Google.Protobuf;
 using rpc_csharp.protocol;
 using rpc_csharp.transport;
 
-namespace rpc_csharp.server
+namespace rpc_csharp
 {
     public class AckHelper
     {

@@ -6,12 +6,20 @@
         <RootNamespace>rpc_csharp</RootNamespace>
         <ImplicitUsings>disable</ImplicitUsings>
         <Nullable>disable</Nullable>
+        <DefineConstants>GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DefineConstants>TRACE;GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Google.Protobuf" Version="3.21.1" />
+        <PackageReference Include="Google.Protobuf" Version="3.12.3" />
         <PackageReference Include="UniTask" Version="2.3.1" />
-        <PackageReference Include="websocketsharp.core" Version="1.0.0" />
     </ItemGroup>
 
+    <Target Name="protogen" BeforeTargets="BeforeBuild">
+        <Exec WorkingDirectory="$(ProjectDir)src/Runtime/protocol/" Command="./build.sh" />
+    </Target>
+    
 </Project>

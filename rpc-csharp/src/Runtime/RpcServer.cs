@@ -4,7 +4,6 @@ using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 using Google.Protobuf.Collections;
 using rpc_csharp.protocol;
-using rpc_csharp.server;
 using rpc_csharp.transport;
 
 namespace rpc_csharp
@@ -62,10 +61,7 @@ namespace rpc_csharp
 
             var inProcedures = loadedModule.procedures;
 
-            var pbProcedures = new RepeatedField<ModuleProcedure>
-            {
-                Capacity = inProcedures.Count
-            };
+            var pbProcedures = new RepeatedField<ModuleProcedure>();
 
             int inProceduresCount = inProcedures.Count;
             for (int i = 0; i < inProceduresCount; i++)

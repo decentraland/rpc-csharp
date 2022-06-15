@@ -7,6 +7,7 @@
         <RootNamespace>rpc_csharp_demo</RootNamespace>
         <ImplicitUsings>disable</ImplicitUsings>
         <Nullable>disable</Nullable>
+        <DefineConstants>GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
@@ -33,13 +34,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Grpc.Net.Client" Version="2.46.0" />
-        <PackageReference Include="Grpc.Tools" Version="2.46.3">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
         <PackageReference Include="UniTask" Version="2.3.1" />
-        <PackageReference Include="websocketsharp.core" Version="1.0.0" />
+        <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11" />
     </ItemGroup>
+
+    <Target Name="protogen" BeforeTargets="BeforeBuild">
+        <Exec WorkingDirectory="$(ProjectDir)example/" Command="./build.sh" />
+    </Target>
 
 </Project>

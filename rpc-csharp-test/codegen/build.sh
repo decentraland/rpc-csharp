@@ -2,10 +2,10 @@
 
 # replace this with your own protoc
 protoc \
-    -I="$(PWD)" \
+    -I="$(pwd)" \
 		--plugin=protoc-gen-dclunity=../../dcl-protoc-csharp-plugin/index.js \
-		--dclunity_out="$(PWD)" \
-		--csharp_out="$(PWD)" \
+		--dclunity_out="$(pwd)" \
+		--csharp_out="$(pwd)" \
 		--csharp_opt=file_extension=.gen.cs \
-		-I="$(PWD)" \
-		"$(PWD)/api.proto"
+		-I="$(pwd)" \
+		"$(pwd)/api.proto"

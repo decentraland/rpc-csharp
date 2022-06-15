@@ -1,0 +1,25 @@
+{
+  "name": "com.decentraland.rpc-csharp",
+  "version": "1.0.0",
+  "displayName": "DCL RPC for Unity",
+  "description": "Decentraland RPC for Unity Package",
+  "unity": "2020.3",
+  "unityRelease": "0f1",
+  "gitDependencies": {
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask"
+  },
+  "dependencies": {
+  },
+  "testables": [
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/decentraland/rpc-csharp.git?path=rpc-csharp/src"
+  },
+  "keywords": [],
+  "author": {
+    "name": "Decentraland",
+    "email": "contact@decentraland.org",
+    "url": "https://www.decentraland.org"
+  }
+}
