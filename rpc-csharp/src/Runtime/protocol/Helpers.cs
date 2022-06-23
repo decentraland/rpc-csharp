@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 
 namespace rpc_csharp.protocol
@@ -70,7 +71,7 @@ namespace rpc_csharp.protocol
             return null;
         }
 
-        public static IEnumerator<ByteString> SerializeMessageEnumerator<T>(IEnumerator<T> generator)
+        public static IEnumerator<UniTask<ByteString>> SerializeMessageEnumerator<T>(IEnumerator<UniTask<T>> generator)
             where T : IMessage
         {
             using (var iterator = generator)
@@ -78,10 +79,7 @@ namespace rpc_csharp.protocol
                 while (iterator.MoveNext())
                 {
                     var current = iterator.Current;
-                    if (current != null)
-                    {
-                        yield return current.ToByteString();
-                    }
+                    yield return current.ContinueWith(m => m.ToByteString());
                 }
             }
         }

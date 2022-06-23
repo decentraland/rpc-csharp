@@ -98,19 +98,23 @@ public sealed partial class RpcMessageHeader : pb::IMessage<RpcMessageHeader>
   private static readonly pb::MessageParser<RpcMessageHeader> _parser = new pb::MessageParser<RpcMessageHeader>(() => new RpcMessageHeader());
   private pb::UnknownFieldSet _unknownFields;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pb::MessageParser<RpcMessageHeader> Parser { get { return _parser; } }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pbr::MessageDescriptor Descriptor {
     get { return global::IndexReflection.Descriptor.MessageTypes[0]; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   pbr::MessageDescriptor pb::IMessage.Descriptor {
     get { return Descriptor; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public RpcMessageHeader() {
     OnConstruction();
   }
@@ -118,12 +122,14 @@ public sealed partial class RpcMessageHeader : pb::IMessage<RpcMessageHeader>
   partial void OnConstruction();
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public RpcMessageHeader(RpcMessageHeader other) : this() {
     messageIdentifier_ = other.messageIdentifier_;
     _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public RpcMessageHeader Clone() {
     return new RpcMessageHeader(this);
   }
@@ -132,6 +138,7 @@ public sealed partial class RpcMessageHeader : pb::IMessage<RpcMessageHeader>
   public const int MessageIdentifierFieldNumber = 1;
   private uint messageIdentifier_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint MessageIdentifier {
     get { return messageIdentifier_; }
     set {
@@ -140,11 +147,13 @@ public sealed partial class RpcMessageHeader : pb::IMessage<RpcMessageHeader>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override bool Equals(object other) {
     return Equals(other as RpcMessageHeader);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public bool Equals(RpcMessageHeader other) {
     if (ReferenceEquals(other, null)) {
       return false;
@@ -157,6 +166,7 @@ public sealed partial class RpcMessageHeader : pb::IMessage<RpcMessageHeader>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override int GetHashCode() {
     int hash = 1;
     if (MessageIdentifier != 0) hash ^= MessageIdentifier.GetHashCode();
@@ -167,11 +177,13 @@ public sealed partial class RpcMessageHeader : pb::IMessage<RpcMessageHeader>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override string ToString() {
     return pb::JsonFormatter.ToDiagnosticString(this);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void WriteTo(pb::CodedOutputStream output) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     output.WriteRawMessage(this);
@@ -188,6 +200,7 @@ public sealed partial class RpcMessageHeader : pb::IMessage<RpcMessageHeader>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
     if (MessageIdentifier != 0) {
       output.WriteRawTag(13);
@@ -200,6 +213,7 @@ public sealed partial class RpcMessageHeader : pb::IMessage<RpcMessageHeader>
   #endif
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public int CalculateSize() {
     int size = 0;
     if (MessageIdentifier != 0) {
@@ -212,6 +226,7 @@ public sealed partial class RpcMessageHeader : pb::IMessage<RpcMessageHeader>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(RpcMessageHeader other) {
     if (other == null) {
       return;
@@ -223,6 +238,7 @@ public sealed partial class RpcMessageHeader : pb::IMessage<RpcMessageHeader>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(pb::CodedInputStream input) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     input.ReadRawMessage(this);
@@ -244,6 +260,7 @@ public sealed partial class RpcMessageHeader : pb::IMessage<RpcMessageHeader>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
     uint tag;
     while ((tag = input.ReadTag()) != 0) {
@@ -270,19 +287,23 @@ public sealed partial class CreatePort : pb::IMessage<CreatePort>
   private static readonly pb::MessageParser<CreatePort> _parser = new pb::MessageParser<CreatePort>(() => new CreatePort());
   private pb::UnknownFieldSet _unknownFields;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pb::MessageParser<CreatePort> Parser { get { return _parser; } }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pbr::MessageDescriptor Descriptor {
     get { return global::IndexReflection.Descriptor.MessageTypes[1]; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   pbr::MessageDescriptor pb::IMessage.Descriptor {
     get { return Descriptor; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public CreatePort() {
     OnConstruction();
   }
@@ -290,6 +311,7 @@ public sealed partial class CreatePort : pb::IMessage<CreatePort>
   partial void OnConstruction();
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public CreatePort(CreatePort other) : this() {
     messageIdentifier_ = other.messageIdentifier_;
     portName_ = other.portName_;
@@ -297,6 +319,7 @@ public sealed partial class CreatePort : pb::IMessage<CreatePort>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public CreatePort Clone() {
     return new CreatePort(this);
   }
@@ -305,6 +328,7 @@ public sealed partial class CreatePort : pb::IMessage<CreatePort>
   public const int MessageIdentifierFieldNumber = 1;
   private uint messageIdentifier_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint MessageIdentifier {
     get { return messageIdentifier_; }
     set {
@@ -316,6 +340,7 @@ public sealed partial class CreatePort : pb::IMessage<CreatePort>
   public const int PortNameFieldNumber = 4;
   private string portName_ = "";
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public string PortName {
     get { return portName_; }
     set {
@@ -324,11 +349,13 @@ public sealed partial class CreatePort : pb::IMessage<CreatePort>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override bool Equals(object other) {
     return Equals(other as CreatePort);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public bool Equals(CreatePort other) {
     if (ReferenceEquals(other, null)) {
       return false;
@@ -342,6 +369,7 @@ public sealed partial class CreatePort : pb::IMessage<CreatePort>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override int GetHashCode() {
     int hash = 1;
     if (MessageIdentifier != 0) hash ^= MessageIdentifier.GetHashCode();
@@ -353,11 +381,13 @@ public sealed partial class CreatePort : pb::IMessage<CreatePort>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override string ToString() {
     return pb::JsonFormatter.ToDiagnosticString(this);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void WriteTo(pb::CodedOutputStream output) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     output.WriteRawMessage(this);
@@ -378,6 +408,7 @@ public sealed partial class CreatePort : pb::IMessage<CreatePort>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
     if (MessageIdentifier != 0) {
       output.WriteRawTag(13);
@@ -394,6 +425,7 @@ public sealed partial class CreatePort : pb::IMessage<CreatePort>
   #endif
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public int CalculateSize() {
     int size = 0;
     if (MessageIdentifier != 0) {
@@ -409,6 +441,7 @@ public sealed partial class CreatePort : pb::IMessage<CreatePort>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(CreatePort other) {
     if (other == null) {
       return;
@@ -423,6 +456,7 @@ public sealed partial class CreatePort : pb::IMessage<CreatePort>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(pb::CodedInputStream input) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     input.ReadRawMessage(this);
@@ -448,6 +482,7 @@ public sealed partial class CreatePort : pb::IMessage<CreatePort>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
     uint tag;
     while ((tag = input.ReadTag()) != 0) {
@@ -478,19 +513,23 @@ public sealed partial class CreatePortResponse : pb::IMessage<CreatePortResponse
   private static readonly pb::MessageParser<CreatePortResponse> _parser = new pb::MessageParser<CreatePortResponse>(() => new CreatePortResponse());
   private pb::UnknownFieldSet _unknownFields;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pb::MessageParser<CreatePortResponse> Parser { get { return _parser; } }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pbr::MessageDescriptor Descriptor {
     get { return global::IndexReflection.Descriptor.MessageTypes[2]; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   pbr::MessageDescriptor pb::IMessage.Descriptor {
     get { return Descriptor; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public CreatePortResponse() {
     OnConstruction();
   }
@@ -498,6 +537,7 @@ public sealed partial class CreatePortResponse : pb::IMessage<CreatePortResponse
   partial void OnConstruction();
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public CreatePortResponse(CreatePortResponse other) : this() {
     messageIdentifier_ = other.messageIdentifier_;
     portId_ = other.portId_;
@@ -505,6 +545,7 @@ public sealed partial class CreatePortResponse : pb::IMessage<CreatePortResponse
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public CreatePortResponse Clone() {
     return new CreatePortResponse(this);
   }
@@ -513,6 +554,7 @@ public sealed partial class CreatePortResponse : pb::IMessage<CreatePortResponse
   public const int MessageIdentifierFieldNumber = 1;
   private uint messageIdentifier_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint MessageIdentifier {
     get { return messageIdentifier_; }
     set {
@@ -524,6 +566,7 @@ public sealed partial class CreatePortResponse : pb::IMessage<CreatePortResponse
   public const int PortIdFieldNumber = 2;
   private uint portId_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint PortId {
     get { return portId_; }
     set {
@@ -532,11 +575,13 @@ public sealed partial class CreatePortResponse : pb::IMessage<CreatePortResponse
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override bool Equals(object other) {
     return Equals(other as CreatePortResponse);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public bool Equals(CreatePortResponse other) {
     if (ReferenceEquals(other, null)) {
       return false;
@@ -550,6 +595,7 @@ public sealed partial class CreatePortResponse : pb::IMessage<CreatePortResponse
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override int GetHashCode() {
     int hash = 1;
     if (MessageIdentifier != 0) hash ^= MessageIdentifier.GetHashCode();
@@ -561,11 +607,13 @@ public sealed partial class CreatePortResponse : pb::IMessage<CreatePortResponse
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override string ToString() {
     return pb::JsonFormatter.ToDiagnosticString(this);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void WriteTo(pb::CodedOutputStream output) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     output.WriteRawMessage(this);
@@ -586,6 +634,7 @@ public sealed partial class CreatePortResponse : pb::IMessage<CreatePortResponse
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
     if (MessageIdentifier != 0) {
       output.WriteRawTag(13);
@@ -602,6 +651,7 @@ public sealed partial class CreatePortResponse : pb::IMessage<CreatePortResponse
   #endif
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public int CalculateSize() {
     int size = 0;
     if (MessageIdentifier != 0) {
@@ -617,6 +667,7 @@ public sealed partial class CreatePortResponse : pb::IMessage<CreatePortResponse
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(CreatePortResponse other) {
     if (other == null) {
       return;
@@ -631,6 +682,7 @@ public sealed partial class CreatePortResponse : pb::IMessage<CreatePortResponse
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(pb::CodedInputStream input) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     input.ReadRawMessage(this);
@@ -656,6 +708,7 @@ public sealed partial class CreatePortResponse : pb::IMessage<CreatePortResponse
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
     uint tag;
     while ((tag = input.ReadTag()) != 0) {
@@ -686,19 +739,23 @@ public sealed partial class RequestModule : pb::IMessage<RequestModule>
   private static readonly pb::MessageParser<RequestModule> _parser = new pb::MessageParser<RequestModule>(() => new RequestModule());
   private pb::UnknownFieldSet _unknownFields;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pb::MessageParser<RequestModule> Parser { get { return _parser; } }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pbr::MessageDescriptor Descriptor {
     get { return global::IndexReflection.Descriptor.MessageTypes[3]; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   pbr::MessageDescriptor pb::IMessage.Descriptor {
     get { return Descriptor; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public RequestModule() {
     OnConstruction();
   }
@@ -706,6 +763,7 @@ public sealed partial class RequestModule : pb::IMessage<RequestModule>
   partial void OnConstruction();
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public RequestModule(RequestModule other) : this() {
     messageIdentifier_ = other.messageIdentifier_;
     portId_ = other.portId_;
@@ -714,6 +772,7 @@ public sealed partial class RequestModule : pb::IMessage<RequestModule>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public RequestModule Clone() {
     return new RequestModule(this);
   }
@@ -722,6 +781,7 @@ public sealed partial class RequestModule : pb::IMessage<RequestModule>
   public const int MessageIdentifierFieldNumber = 1;
   private uint messageIdentifier_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint MessageIdentifier {
     get { return messageIdentifier_; }
     set {
@@ -733,6 +793,7 @@ public sealed partial class RequestModule : pb::IMessage<RequestModule>
   public const int PortIdFieldNumber = 2;
   private uint portId_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint PortId {
     get { return portId_; }
     set {
@@ -744,6 +805,7 @@ public sealed partial class RequestModule : pb::IMessage<RequestModule>
   public const int ModuleNameFieldNumber = 4;
   private string moduleName_ = "";
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public string ModuleName {
     get { return moduleName_; }
     set {
@@ -752,11 +814,13 @@ public sealed partial class RequestModule : pb::IMessage<RequestModule>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override bool Equals(object other) {
     return Equals(other as RequestModule);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public bool Equals(RequestModule other) {
     if (ReferenceEquals(other, null)) {
       return false;
@@ -771,6 +835,7 @@ public sealed partial class RequestModule : pb::IMessage<RequestModule>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override int GetHashCode() {
     int hash = 1;
     if (MessageIdentifier != 0) hash ^= MessageIdentifier.GetHashCode();
@@ -783,11 +848,13 @@ public sealed partial class RequestModule : pb::IMessage<RequestModule>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override string ToString() {
     return pb::JsonFormatter.ToDiagnosticString(this);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void WriteTo(pb::CodedOutputStream output) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     output.WriteRawMessage(this);
@@ -812,6 +879,7 @@ public sealed partial class RequestModule : pb::IMessage<RequestModule>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
     if (MessageIdentifier != 0) {
       output.WriteRawTag(13);
@@ -832,6 +900,7 @@ public sealed partial class RequestModule : pb::IMessage<RequestModule>
   #endif
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public int CalculateSize() {
     int size = 0;
     if (MessageIdentifier != 0) {
@@ -850,6 +919,7 @@ public sealed partial class RequestModule : pb::IMessage<RequestModule>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(RequestModule other) {
     if (other == null) {
       return;
@@ -867,6 +937,7 @@ public sealed partial class RequestModule : pb::IMessage<RequestModule>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(pb::CodedInputStream input) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     input.ReadRawMessage(this);
@@ -896,6 +967,7 @@ public sealed partial class RequestModule : pb::IMessage<RequestModule>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
     uint tag;
     while ((tag = input.ReadTag()) != 0) {
@@ -930,19 +1002,23 @@ public sealed partial class RequestModuleResponse : pb::IMessage<RequestModuleRe
   private static readonly pb::MessageParser<RequestModuleResponse> _parser = new pb::MessageParser<RequestModuleResponse>(() => new RequestModuleResponse());
   private pb::UnknownFieldSet _unknownFields;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pb::MessageParser<RequestModuleResponse> Parser { get { return _parser; } }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pbr::MessageDescriptor Descriptor {
     get { return global::IndexReflection.Descriptor.MessageTypes[4]; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   pbr::MessageDescriptor pb::IMessage.Descriptor {
     get { return Descriptor; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public RequestModuleResponse() {
     OnConstruction();
   }
@@ -950,6 +1026,7 @@ public sealed partial class RequestModuleResponse : pb::IMessage<RequestModuleRe
   partial void OnConstruction();
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public RequestModuleResponse(RequestModuleResponse other) : this() {
     messageIdentifier_ = other.messageIdentifier_;
     portId_ = other.portId_;
@@ -958,6 +1035,7 @@ public sealed partial class RequestModuleResponse : pb::IMessage<RequestModuleRe
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public RequestModuleResponse Clone() {
     return new RequestModuleResponse(this);
   }
@@ -966,6 +1044,7 @@ public sealed partial class RequestModuleResponse : pb::IMessage<RequestModuleRe
   public const int MessageIdentifierFieldNumber = 1;
   private uint messageIdentifier_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint MessageIdentifier {
     get { return messageIdentifier_; }
     set {
@@ -977,6 +1056,7 @@ public sealed partial class RequestModuleResponse : pb::IMessage<RequestModuleRe
   public const int PortIdFieldNumber = 2;
   private uint portId_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint PortId {
     get { return portId_; }
     set {
@@ -990,16 +1070,19 @@ public sealed partial class RequestModuleResponse : pb::IMessage<RequestModuleRe
       = pb::FieldCodec.ForMessage(42, global::ModuleProcedure.Parser);
   private readonly pbc::RepeatedField<global::ModuleProcedure> procedures_ = new pbc::RepeatedField<global::ModuleProcedure>();
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public pbc::RepeatedField<global::ModuleProcedure> Procedures {
     get { return procedures_; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override bool Equals(object other) {
     return Equals(other as RequestModuleResponse);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public bool Equals(RequestModuleResponse other) {
     if (ReferenceEquals(other, null)) {
       return false;
@@ -1014,6 +1097,7 @@ public sealed partial class RequestModuleResponse : pb::IMessage<RequestModuleRe
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override int GetHashCode() {
     int hash = 1;
     if (MessageIdentifier != 0) hash ^= MessageIdentifier.GetHashCode();
@@ -1026,11 +1110,13 @@ public sealed partial class RequestModuleResponse : pb::IMessage<RequestModuleRe
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override string ToString() {
     return pb::JsonFormatter.ToDiagnosticString(this);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void WriteTo(pb::CodedOutputStream output) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     output.WriteRawMessage(this);
@@ -1052,6 +1138,7 @@ public sealed partial class RequestModuleResponse : pb::IMessage<RequestModuleRe
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
     if (MessageIdentifier != 0) {
       output.WriteRawTag(13);
@@ -1069,6 +1156,7 @@ public sealed partial class RequestModuleResponse : pb::IMessage<RequestModuleRe
   #endif
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public int CalculateSize() {
     int size = 0;
     if (MessageIdentifier != 0) {
@@ -1085,6 +1173,7 @@ public sealed partial class RequestModuleResponse : pb::IMessage<RequestModuleRe
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(RequestModuleResponse other) {
     if (other == null) {
       return;
@@ -1100,6 +1189,7 @@ public sealed partial class RequestModuleResponse : pb::IMessage<RequestModuleRe
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(pb::CodedInputStream input) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     input.ReadRawMessage(this);
@@ -1129,6 +1219,7 @@ public sealed partial class RequestModuleResponse : pb::IMessage<RequestModuleRe
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
     uint tag;
     while ((tag = input.ReadTag()) != 0) {
@@ -1163,19 +1254,23 @@ public sealed partial class DestroyPort : pb::IMessage<DestroyPort>
   private static readonly pb::MessageParser<DestroyPort> _parser = new pb::MessageParser<DestroyPort>(() => new DestroyPort());
   private pb::UnknownFieldSet _unknownFields;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pb::MessageParser<DestroyPort> Parser { get { return _parser; } }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pbr::MessageDescriptor Descriptor {
     get { return global::IndexReflection.Descriptor.MessageTypes[5]; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   pbr::MessageDescriptor pb::IMessage.Descriptor {
     get { return Descriptor; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public DestroyPort() {
     OnConstruction();
   }
@@ -1183,6 +1278,7 @@ public sealed partial class DestroyPort : pb::IMessage<DestroyPort>
   partial void OnConstruction();
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public DestroyPort(DestroyPort other) : this() {
     messageIdentifier_ = other.messageIdentifier_;
     portId_ = other.portId_;
@@ -1190,6 +1286,7 @@ public sealed partial class DestroyPort : pb::IMessage<DestroyPort>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public DestroyPort Clone() {
     return new DestroyPort(this);
   }
@@ -1198,6 +1295,7 @@ public sealed partial class DestroyPort : pb::IMessage<DestroyPort>
   public const int MessageIdentifierFieldNumber = 1;
   private uint messageIdentifier_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint MessageIdentifier {
     get { return messageIdentifier_; }
     set {
@@ -1209,6 +1307,7 @@ public sealed partial class DestroyPort : pb::IMessage<DestroyPort>
   public const int PortIdFieldNumber = 2;
   private uint portId_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint PortId {
     get { return portId_; }
     set {
@@ -1217,11 +1316,13 @@ public sealed partial class DestroyPort : pb::IMessage<DestroyPort>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override bool Equals(object other) {
     return Equals(other as DestroyPort);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public bool Equals(DestroyPort other) {
     if (ReferenceEquals(other, null)) {
       return false;
@@ -1235,6 +1336,7 @@ public sealed partial class DestroyPort : pb::IMessage<DestroyPort>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override int GetHashCode() {
     int hash = 1;
     if (MessageIdentifier != 0) hash ^= MessageIdentifier.GetHashCode();
@@ -1246,11 +1348,13 @@ public sealed partial class DestroyPort : pb::IMessage<DestroyPort>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override string ToString() {
     return pb::JsonFormatter.ToDiagnosticString(this);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void WriteTo(pb::CodedOutputStream output) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     output.WriteRawMessage(this);
@@ -1271,6 +1375,7 @@ public sealed partial class DestroyPort : pb::IMessage<DestroyPort>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
     if (MessageIdentifier != 0) {
       output.WriteRawTag(13);
@@ -1287,6 +1392,7 @@ public sealed partial class DestroyPort : pb::IMessage<DestroyPort>
   #endif
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public int CalculateSize() {
     int size = 0;
     if (MessageIdentifier != 0) {
@@ -1302,6 +1408,7 @@ public sealed partial class DestroyPort : pb::IMessage<DestroyPort>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(DestroyPort other) {
     if (other == null) {
       return;
@@ -1316,6 +1423,7 @@ public sealed partial class DestroyPort : pb::IMessage<DestroyPort>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(pb::CodedInputStream input) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     input.ReadRawMessage(this);
@@ -1341,6 +1449,7 @@ public sealed partial class DestroyPort : pb::IMessage<DestroyPort>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
     uint tag;
     while ((tag = input.ReadTag()) != 0) {
@@ -1371,19 +1480,23 @@ public sealed partial class ModuleProcedure : pb::IMessage<ModuleProcedure>
   private static readonly pb::MessageParser<ModuleProcedure> _parser = new pb::MessageParser<ModuleProcedure>(() => new ModuleProcedure());
   private pb::UnknownFieldSet _unknownFields;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pb::MessageParser<ModuleProcedure> Parser { get { return _parser; } }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pbr::MessageDescriptor Descriptor {
     get { return global::IndexReflection.Descriptor.MessageTypes[6]; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   pbr::MessageDescriptor pb::IMessage.Descriptor {
     get { return Descriptor; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public ModuleProcedure() {
     OnConstruction();
   }
@@ -1391,6 +1504,7 @@ public sealed partial class ModuleProcedure : pb::IMessage<ModuleProcedure>
   partial void OnConstruction();
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public ModuleProcedure(ModuleProcedure other) : this() {
     procedureId_ = other.procedureId_;
     procedureName_ = other.procedureName_;
@@ -1398,6 +1512,7 @@ public sealed partial class ModuleProcedure : pb::IMessage<ModuleProcedure>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public ModuleProcedure Clone() {
     return new ModuleProcedure(this);
   }
@@ -1406,6 +1521,7 @@ public sealed partial class ModuleProcedure : pb::IMessage<ModuleProcedure>
   public const int ProcedureIdFieldNumber = 1;
   private uint procedureId_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint ProcedureId {
     get { return procedureId_; }
     set {
@@ -1417,6 +1533,7 @@ public sealed partial class ModuleProcedure : pb::IMessage<ModuleProcedure>
   public const int ProcedureNameFieldNumber = 2;
   private string procedureName_ = "";
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public string ProcedureName {
     get { return procedureName_; }
     set {
@@ -1425,11 +1542,13 @@ public sealed partial class ModuleProcedure : pb::IMessage<ModuleProcedure>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override bool Equals(object other) {
     return Equals(other as ModuleProcedure);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public bool Equals(ModuleProcedure other) {
     if (ReferenceEquals(other, null)) {
       return false;
@@ -1443,6 +1562,7 @@ public sealed partial class ModuleProcedure : pb::IMessage<ModuleProcedure>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override int GetHashCode() {
     int hash = 1;
     if (ProcedureId != 0) hash ^= ProcedureId.GetHashCode();
@@ -1454,11 +1574,13 @@ public sealed partial class ModuleProcedure : pb::IMessage<ModuleProcedure>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override string ToString() {
     return pb::JsonFormatter.ToDiagnosticString(this);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void WriteTo(pb::CodedOutputStream output) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     output.WriteRawMessage(this);
@@ -1479,6 +1601,7 @@ public sealed partial class ModuleProcedure : pb::IMessage<ModuleProcedure>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
     if (ProcedureId != 0) {
       output.WriteRawTag(13);
@@ -1495,6 +1618,7 @@ public sealed partial class ModuleProcedure : pb::IMessage<ModuleProcedure>
   #endif
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public int CalculateSize() {
     int size = 0;
     if (ProcedureId != 0) {
@@ -1510,6 +1634,7 @@ public sealed partial class ModuleProcedure : pb::IMessage<ModuleProcedure>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(ModuleProcedure other) {
     if (other == null) {
       return;
@@ -1524,6 +1649,7 @@ public sealed partial class ModuleProcedure : pb::IMessage<ModuleProcedure>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(pb::CodedInputStream input) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     input.ReadRawMessage(this);
@@ -1549,6 +1675,7 @@ public sealed partial class ModuleProcedure : pb::IMessage<ModuleProcedure>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
     uint tag;
     while ((tag = input.ReadTag()) != 0) {
@@ -1579,19 +1706,23 @@ public sealed partial class Request : pb::IMessage<Request>
   private static readonly pb::MessageParser<Request> _parser = new pb::MessageParser<Request>(() => new Request());
   private pb::UnknownFieldSet _unknownFields;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pb::MessageParser<Request> Parser { get { return _parser; } }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pbr::MessageDescriptor Descriptor {
     get { return global::IndexReflection.Descriptor.MessageTypes[7]; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   pbr::MessageDescriptor pb::IMessage.Descriptor {
     get { return Descriptor; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public Request() {
     OnConstruction();
   }
@@ -1599,6 +1730,7 @@ public sealed partial class Request : pb::IMessage<Request>
   partial void OnConstruction();
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public Request(Request other) : this() {
     messageIdentifier_ = other.messageIdentifier_;
     portId_ = other.portId_;
@@ -1608,6 +1740,7 @@ public sealed partial class Request : pb::IMessage<Request>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public Request Clone() {
     return new Request(this);
   }
@@ -1616,6 +1749,7 @@ public sealed partial class Request : pb::IMessage<Request>
   public const int MessageIdentifierFieldNumber = 1;
   private uint messageIdentifier_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint MessageIdentifier {
     get { return messageIdentifier_; }
     set {
@@ -1627,6 +1761,7 @@ public sealed partial class Request : pb::IMessage<Request>
   public const int PortIdFieldNumber = 2;
   private uint portId_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint PortId {
     get { return portId_; }
     set {
@@ -1638,6 +1773,7 @@ public sealed partial class Request : pb::IMessage<Request>
   public const int ProcedureIdFieldNumber = 4;
   private uint procedureId_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint ProcedureId {
     get { return procedureId_; }
     set {
@@ -1649,6 +1785,7 @@ public sealed partial class Request : pb::IMessage<Request>
   public const int PayloadFieldNumber = 6;
   private pb::ByteString payload_ = pb::ByteString.Empty;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public pb::ByteString Payload {
     get { return payload_; }
     set {
@@ -1657,11 +1794,13 @@ public sealed partial class Request : pb::IMessage<Request>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override bool Equals(object other) {
     return Equals(other as Request);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public bool Equals(Request other) {
     if (ReferenceEquals(other, null)) {
       return false;
@@ -1677,6 +1816,7 @@ public sealed partial class Request : pb::IMessage<Request>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override int GetHashCode() {
     int hash = 1;
     if (MessageIdentifier != 0) hash ^= MessageIdentifier.GetHashCode();
@@ -1690,11 +1830,13 @@ public sealed partial class Request : pb::IMessage<Request>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override string ToString() {
     return pb::JsonFormatter.ToDiagnosticString(this);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void WriteTo(pb::CodedOutputStream output) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     output.WriteRawMessage(this);
@@ -1723,6 +1865,7 @@ public sealed partial class Request : pb::IMessage<Request>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
     if (MessageIdentifier != 0) {
       output.WriteRawTag(13);
@@ -1747,6 +1890,7 @@ public sealed partial class Request : pb::IMessage<Request>
   #endif
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public int CalculateSize() {
     int size = 0;
     if (MessageIdentifier != 0) {
@@ -1768,6 +1912,7 @@ public sealed partial class Request : pb::IMessage<Request>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(Request other) {
     if (other == null) {
       return;
@@ -1788,6 +1933,7 @@ public sealed partial class Request : pb::IMessage<Request>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(pb::CodedInputStream input) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     input.ReadRawMessage(this);
@@ -1821,6 +1967,7 @@ public sealed partial class Request : pb::IMessage<Request>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
     uint tag;
     while ((tag = input.ReadTag()) != 0) {
@@ -1859,19 +2006,23 @@ public sealed partial class RemoteError : pb::IMessage<RemoteError>
   private static readonly pb::MessageParser<RemoteError> _parser = new pb::MessageParser<RemoteError>(() => new RemoteError());
   private pb::UnknownFieldSet _unknownFields;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pb::MessageParser<RemoteError> Parser { get { return _parser; } }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pbr::MessageDescriptor Descriptor {
     get { return global::IndexReflection.Descriptor.MessageTypes[8]; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   pbr::MessageDescriptor pb::IMessage.Descriptor {
     get { return Descriptor; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public RemoteError() {
     OnConstruction();
   }
@@ -1879,6 +2030,7 @@ public sealed partial class RemoteError : pb::IMessage<RemoteError>
   partial void OnConstruction();
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public RemoteError(RemoteError other) : this() {
     messageIdentifier_ = other.messageIdentifier_;
     errorCode_ = other.errorCode_;
@@ -1887,6 +2039,7 @@ public sealed partial class RemoteError : pb::IMessage<RemoteError>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public RemoteError Clone() {
     return new RemoteError(this);
   }
@@ -1895,6 +2048,7 @@ public sealed partial class RemoteError : pb::IMessage<RemoteError>
   public const int MessageIdentifierFieldNumber = 1;
   private uint messageIdentifier_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint MessageIdentifier {
     get { return messageIdentifier_; }
     set {
@@ -1906,6 +2060,7 @@ public sealed partial class RemoteError : pb::IMessage<RemoteError>
   public const int ErrorCodeFieldNumber = 2;
   private uint errorCode_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint ErrorCode {
     get { return errorCode_; }
     set {
@@ -1917,6 +2072,7 @@ public sealed partial class RemoteError : pb::IMessage<RemoteError>
   public const int ErrorMessageFieldNumber = 3;
   private string errorMessage_ = "";
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public string ErrorMessage {
     get { return errorMessage_; }
     set {
@@ -1925,11 +2081,13 @@ public sealed partial class RemoteError : pb::IMessage<RemoteError>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override bool Equals(object other) {
     return Equals(other as RemoteError);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public bool Equals(RemoteError other) {
     if (ReferenceEquals(other, null)) {
       return false;
@@ -1944,6 +2102,7 @@ public sealed partial class RemoteError : pb::IMessage<RemoteError>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override int GetHashCode() {
     int hash = 1;
     if (MessageIdentifier != 0) hash ^= MessageIdentifier.GetHashCode();
@@ -1956,11 +2115,13 @@ public sealed partial class RemoteError : pb::IMessage<RemoteError>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override string ToString() {
     return pb::JsonFormatter.ToDiagnosticString(this);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void WriteTo(pb::CodedOutputStream output) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     output.WriteRawMessage(this);
@@ -1985,6 +2146,7 @@ public sealed partial class RemoteError : pb::IMessage<RemoteError>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
     if (MessageIdentifier != 0) {
       output.WriteRawTag(13);
@@ -2005,6 +2167,7 @@ public sealed partial class RemoteError : pb::IMessage<RemoteError>
   #endif
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public int CalculateSize() {
     int size = 0;
     if (MessageIdentifier != 0) {
@@ -2023,6 +2186,7 @@ public sealed partial class RemoteError : pb::IMessage<RemoteError>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(RemoteError other) {
     if (other == null) {
       return;
@@ -2040,6 +2204,7 @@ public sealed partial class RemoteError : pb::IMessage<RemoteError>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(pb::CodedInputStream input) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     input.ReadRawMessage(this);
@@ -2069,6 +2234,7 @@ public sealed partial class RemoteError : pb::IMessage<RemoteError>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
     uint tag;
     while ((tag = input.ReadTag()) != 0) {
@@ -2103,19 +2269,23 @@ public sealed partial class Response : pb::IMessage<Response>
   private static readonly pb::MessageParser<Response> _parser = new pb::MessageParser<Response>(() => new Response());
   private pb::UnknownFieldSet _unknownFields;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pb::MessageParser<Response> Parser { get { return _parser; } }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pbr::MessageDescriptor Descriptor {
     get { return global::IndexReflection.Descriptor.MessageTypes[9]; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   pbr::MessageDescriptor pb::IMessage.Descriptor {
     get { return Descriptor; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public Response() {
     OnConstruction();
   }
@@ -2123,6 +2293,7 @@ public sealed partial class Response : pb::IMessage<Response>
   partial void OnConstruction();
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public Response(Response other) : this() {
     messageIdentifier_ = other.messageIdentifier_;
     payload_ = other.payload_;
@@ -2130,6 +2301,7 @@ public sealed partial class Response : pb::IMessage<Response>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public Response Clone() {
     return new Response(this);
   }
@@ -2138,6 +2310,7 @@ public sealed partial class Response : pb::IMessage<Response>
   public const int MessageIdentifierFieldNumber = 1;
   private uint messageIdentifier_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint MessageIdentifier {
     get { return messageIdentifier_; }
     set {
@@ -2149,6 +2322,7 @@ public sealed partial class Response : pb::IMessage<Response>
   public const int PayloadFieldNumber = 6;
   private pb::ByteString payload_ = pb::ByteString.Empty;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public pb::ByteString Payload {
     get { return payload_; }
     set {
@@ -2157,11 +2331,13 @@ public sealed partial class Response : pb::IMessage<Response>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override bool Equals(object other) {
     return Equals(other as Response);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public bool Equals(Response other) {
     if (ReferenceEquals(other, null)) {
       return false;
@@ -2175,6 +2351,7 @@ public sealed partial class Response : pb::IMessage<Response>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override int GetHashCode() {
     int hash = 1;
     if (MessageIdentifier != 0) hash ^= MessageIdentifier.GetHashCode();
@@ -2186,11 +2363,13 @@ public sealed partial class Response : pb::IMessage<Response>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override string ToString() {
     return pb::JsonFormatter.ToDiagnosticString(this);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void WriteTo(pb::CodedOutputStream output) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     output.WriteRawMessage(this);
@@ -2211,6 +2390,7 @@ public sealed partial class Response : pb::IMessage<Response>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
     if (MessageIdentifier != 0) {
       output.WriteRawTag(13);
@@ -2227,6 +2407,7 @@ public sealed partial class Response : pb::IMessage<Response>
   #endif
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public int CalculateSize() {
     int size = 0;
     if (MessageIdentifier != 0) {
@@ -2242,6 +2423,7 @@ public sealed partial class Response : pb::IMessage<Response>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(Response other) {
     if (other == null) {
       return;
@@ -2256,6 +2438,7 @@ public sealed partial class Response : pb::IMessage<Response>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(pb::CodedInputStream input) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     input.ReadRawMessage(this);
@@ -2281,6 +2464,7 @@ public sealed partial class Response : pb::IMessage<Response>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
     uint tag;
     while ((tag = input.ReadTag()) != 0) {
@@ -2311,19 +2495,23 @@ public sealed partial class StreamMessage : pb::IMessage<StreamMessage>
   private static readonly pb::MessageParser<StreamMessage> _parser = new pb::MessageParser<StreamMessage>(() => new StreamMessage());
   private pb::UnknownFieldSet _unknownFields;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pb::MessageParser<StreamMessage> Parser { get { return _parser; } }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public static pbr::MessageDescriptor Descriptor {
     get { return global::IndexReflection.Descriptor.MessageTypes[10]; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   pbr::MessageDescriptor pb::IMessage.Descriptor {
     get { return Descriptor; }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public StreamMessage() {
     OnConstruction();
   }
@@ -2331,6 +2519,7 @@ public sealed partial class StreamMessage : pb::IMessage<StreamMessage>
   partial void OnConstruction();
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public StreamMessage(StreamMessage other) : this() {
     messageIdentifier_ = other.messageIdentifier_;
     portId_ = other.portId_;
@@ -2342,6 +2531,7 @@ public sealed partial class StreamMessage : pb::IMessage<StreamMessage>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public StreamMessage Clone() {
     return new StreamMessage(this);
   }
@@ -2350,6 +2540,7 @@ public sealed partial class StreamMessage : pb::IMessage<StreamMessage>
   public const int MessageIdentifierFieldNumber = 1;
   private uint messageIdentifier_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint MessageIdentifier {
     get { return messageIdentifier_; }
     set {
@@ -2361,6 +2552,7 @@ public sealed partial class StreamMessage : pb::IMessage<StreamMessage>
   public const int PortIdFieldNumber = 2;
   private uint portId_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint PortId {
     get { return portId_; }
     set {
@@ -2372,6 +2564,7 @@ public sealed partial class StreamMessage : pb::IMessage<StreamMessage>
   public const int SequenceIdFieldNumber = 4;
   private uint sequenceId_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public uint SequenceId {
     get { return sequenceId_; }
     set {
@@ -2383,6 +2576,7 @@ public sealed partial class StreamMessage : pb::IMessage<StreamMessage>
   public const int PayloadFieldNumber = 6;
   private pb::ByteString payload_ = pb::ByteString.Empty;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public pb::ByteString Payload {
     get { return payload_; }
     set {
@@ -2394,6 +2588,7 @@ public sealed partial class StreamMessage : pb::IMessage<StreamMessage>
   public const int ClosedFieldNumber = 7;
   private bool closed_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public bool Closed {
     get { return closed_; }
     set {
@@ -2405,6 +2600,7 @@ public sealed partial class StreamMessage : pb::IMessage<StreamMessage>
   public const int AckFieldNumber = 8;
   private bool ack_;
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public bool Ack {
     get { return ack_; }
     set {
@@ -2413,11 +2609,13 @@ public sealed partial class StreamMessage : pb::IMessage<StreamMessage>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override bool Equals(object other) {
     return Equals(other as StreamMessage);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public bool Equals(StreamMessage other) {
     if (ReferenceEquals(other, null)) {
       return false;
@@ -2435,6 +2633,7 @@ public sealed partial class StreamMessage : pb::IMessage<StreamMessage>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override int GetHashCode() {
     int hash = 1;
     if (MessageIdentifier != 0) hash ^= MessageIdentifier.GetHashCode();
@@ -2450,11 +2649,13 @@ public sealed partial class StreamMessage : pb::IMessage<StreamMessage>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public override string ToString() {
     return pb::JsonFormatter.ToDiagnosticString(this);
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void WriteTo(pb::CodedOutputStream output) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     output.WriteRawMessage(this);
@@ -2491,6 +2692,7 @@ public sealed partial class StreamMessage : pb::IMessage<StreamMessage>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
     if (MessageIdentifier != 0) {
       output.WriteRawTag(13);
@@ -2523,6 +2725,7 @@ public sealed partial class StreamMessage : pb::IMessage<StreamMessage>
   #endif
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public int CalculateSize() {
     int size = 0;
     if (MessageIdentifier != 0) {
@@ -2550,6 +2753,7 @@ public sealed partial class StreamMessage : pb::IMessage<StreamMessage>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(StreamMessage other) {
     if (other == null) {
       return;
@@ -2576,6 +2780,7 @@ public sealed partial class StreamMessage : pb::IMessage<StreamMessage>
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   public void MergeFrom(pb::CodedInputStream input) {
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     input.ReadRawMessage(this);
@@ -2617,6 +2822,7 @@ public sealed partial class StreamMessage : pb::IMessage<StreamMessage>
 
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
   void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
     uint tag;
     while ((tag = input.ReadTag()) != 0) {

@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 using NUnit.Framework;
 using Proto;
@@ -52,8 +54,19 @@ namespace rpc_csharp_test
 
                         return new Book();
                     },
-                    (request, context) => { return context.books.AsEnumerable()!.GetEnumerator(); });
+                    (request, context) => QueryBooks(context));
             });
+        }
+        
+        IEnumerator<UniTask<Book>> QueryBooks(BookContext context)
+        {
+            using (var iterator = context.books.AsEnumerable()!.GetEnumerator())
+            {
+                while (iterator.MoveNext())
+                {
+                    yield return new UniTask<Book>(iterator.Current);
+                }
+            }
         }
 
         private void CreatePort(TransportAsyncWrapper clientWrapper)

@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using Proto;
 using rpc_csharp;
 
@@ -23,7 +25,21 @@ namespace rpc_csharp_demo.example
                         Title = "Rpc onion layers",
                     };
                 },
-                (request, context) => { return context.books.AsEnumerable()!.GetEnumerator(); });
+                (request, context) =>
+                {
+                    return QueryBooks(context);
+                });
+
+            IEnumerator<UniTask<Book>> QueryBooks(BookContext context)
+            {
+                using (var iterator = context.books.AsEnumerable()!.GetEnumerator())
+                {
+                    while (iterator.MoveNext())
+                    {
+                        yield return new UniTask<Book>(iterator.Current);
+                    }
+                }
+            }
         }
     }
 }
