@@ -88,7 +88,7 @@ namespace rpc_csharp
 
         private static async UniTask SendStream(AckHelper ackHelper, ITransport transport, uint messageNumber,
             uint portId,
-            IEnumerator<ByteString> stream)
+            IEnumerator<UniTask<ByteString>> stream)
         {
             uint sequenceNumber = 0;
 
@@ -120,7 +120,7 @@ namespace rpc_csharp
             {
                 while (iterator.MoveNext())
                 {
-                    var elem = iterator.Current;
+                    var elem = await iterator.Current;
                     sequenceNumber++;
                     reusedStreamMessage.SequenceId = sequenceNumber;
                     reusedStreamMessage.Payload = elem;
@@ -165,7 +165,7 @@ namespace rpc_csharp
                 transport.SendMessage(response.ToByteArray());
             }
             else if (port.TryCallStreamProcedure(message.ProcedureId, message.Payload, context,
-                out IEnumerator<ByteString> streamResult))
+                out IEnumerator<UniTask<ByteString>> streamResult))
             {
                 await SendStream(ackHelper, transport, messageNumber, port.portId, streamResult);
             }

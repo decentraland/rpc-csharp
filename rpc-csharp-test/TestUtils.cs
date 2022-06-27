@@ -28,7 +28,9 @@ namespace rpc_csharp_test
     {
         private ITransport transport;
             
-        private List<UniTaskCompletionSource<byte[]>> messages = new List<UniTaskCompletionSource<byte[]>>();
+        private List<byte[]> messages = new List<byte[]>();
+        private UniTaskCompletionSource<byte[]> nextMessage;
+        private bool waitingForTask = false;
 
         public int GetMessagesCount()
         {
@@ -41,9 +43,15 @@ namespace rpc_csharp_test
 
             transport.OnMessageEvent += bytes =>
             {
-                var task = new UniTaskCompletionSource<byte[]>();
-                task.TrySetResult(bytes);
-                messages.Add(task);
+                if (waitingForTask)
+                {
+                    waitingForTask = false;
+                    nextMessage.TrySetResult(bytes);
+                }
+                else
+                {
+                    messages.Add(bytes);
+                }
             };
         }
 
@@ -51,15 +59,18 @@ namespace rpc_csharp_test
         {
             if (messages.Count == 0)
             {
-                // TODO: This can await for a new message
-                throw new Exception("No messages");
+                if (waitingForTask == true)
+                {
+                    throw new Exception("Double waiting not supported");
+                }
+                nextMessage = new UniTaskCompletionSource<byte[]>();
+                waitingForTask = true;
+                return nextMessage.Task;
             }
-            else
-            {
-                var task = messages[0];
-                messages.RemoveAt(0);
-                return task.Task;                    
-            }
+
+            var message = messages[0];
+            messages.RemoveAt(0);
+            return UniTask.FromResult(message);
         }
     }
 }

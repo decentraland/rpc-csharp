@@ -1,4 +1,7 @@
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Contexts;
+using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 using NUnit.Framework;
 using Proto;
@@ -52,8 +55,19 @@ namespace rpc_csharp_test
 
                         return new Book();
                     },
-                    (request, context) => { return context.books.AsEnumerable()!.GetEnumerator(); });
+                    (request, context) => QueryBooks(request, context));
             });
+        }
+
+        IEnumerator<Book> QueryBooks(QueryBooksRequest request, BookContext context)
+        {
+            using (var iterator = context.books.AsEnumerable()!.GetEnumerator())
+            {
+                while (iterator.MoveNext())
+                {
+                    yield return iterator.Current;
+                }
+            }
         }
 
         private void CreatePort(TransportAsyncWrapper clientWrapper)
@@ -191,8 +205,10 @@ namespace rpc_csharp_test
         }
 
         [Test]
-        public void ShouldServiceResponseStreamMessages()
+        public void ShouldServiceResponseStreamMessagesCase1()
         {
+            /* Open stream, ask for all messages, and wait for the close event from the server
+             */
             var clientWrapper = new TransportAsyncWrapper(client);
             SetupTestEnvironment(clientWrapper);
 
@@ -267,6 +283,115 @@ namespace rpc_csharp_test
                     ),
                     Ack = false,
                     SequenceId = (uint) context.books.Length,
+                    Closed = true,
+                    PortId = 1
+                };
+                var parsedResponse = StreamMessage.Parser.ParseFrom(response);
+                Assert.True(expectedResponse.Equals(parsedResponse));
+            }
+
+            Assert.True(clientWrapper.GetMessagesCount() == 0);
+        }
+
+        [Test]
+        public void ShouldServiceResponseStreamMessagesCase2()
+        {
+            /* Open stream, and close it immediatly */
+        }
+
+        [Test]
+        public void ShouldServiceResponseStreamMessagesCase3()
+        {
+            /* Open stream, ask for two messages, and close from the client */
+        }
+
+        [Test]
+        public async UniTask ShouldServiceResponseStreamMessagesCase4()
+        {
+            /* Open stream, ask for two messages, and close from the client */
+            context.books = new[]
+            {
+                null,
+                null,
+                null,
+                null,
+                new Book() {Author = "mr pato", Isbn = 7669, Title = "Base64 fan"},
+            };
+            
+            var clientWrapper = new TransportAsyncWrapper(client);
+            SetupTestEnvironment(clientWrapper);
+            Assert.True(clientWrapper.GetMessagesCount() == 0);
+
+            var payload = new QueryBooksRequest()
+            {
+                AuthorPrefix = "mr"
+            };
+            var request = new Request()
+            {
+                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                    RpcMessageTypes.Request,
+                    2
+                ),
+                PortId = 1,
+                Payload = payload.ToByteString(),
+                ProcedureId = 1 // QueryBooks
+            };
+            client.SendMessage(request.ToByteArray());
+
+            {
+                var response = await clientWrapper.GetNextMessage();
+                var expectedResponse = new StreamMessage
+                {
+                    MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                        RpcMessageTypes.StreamMessage,
+                        2
+                    ),
+                    Ack = false,
+                    SequenceId = 0,
+                    Closed = false,
+                    PortId = 1
+                };
+                var parsedResponse = StreamMessage.Parser.ParseFrom(response);
+                Assert.True(expectedResponse.Equals(parsedResponse));
+            }
+
+            // Client StreamMessage ACK
+            TestUtils.ClientSendStreamMessageAck(client, 2, 1, 0);
+
+            var streamResponse = await clientWrapper.GetNextMessage();
+            //Assert.True(clientWrapper.GetMessagesCount() == 0);
+            //var streamResponse = clientWrapper.GetNextMessage().GetAwaiter().GetResult();
+            var expectedStreamResponse = new StreamMessage
+            {
+                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                    RpcMessageTypes.StreamMessage,
+                    2
+                ),
+                PortId = 1,
+                Ack = false,
+                SequenceId = 1,
+                Payload = context.books.Last().ToByteString()
+            };
+            var parsedStreamResponse = StreamMessage.Parser.ParseFrom(streamResponse);
+            Assert.True(expectedStreamResponse.Equals(parsedStreamResponse));
+
+            // Request one answer
+            TestUtils.ClientSendStreamMessageAck(client, 2, 1, 1);
+            
+            // Try to request another one... but it should close
+            //TestUtils.ClientSendStreamMessageAck(client, 2, 1, 2);
+
+            // Get Close Stream Message
+            {
+                var response = await clientWrapper.GetNextMessage();
+                var expectedResponse = new StreamMessage
+                {
+                    MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                        RpcMessageTypes.StreamMessage,
+                        2
+                    ),
+                    Ack = false,
+                    SequenceId = (uint) 1,
                     Closed = true,
                     PortId = 1
                 };
