@@ -58,10 +58,12 @@ namespace rpc_csharp
 
             // C# Promiches
             var ret = new UniTaskCompletionSource<StreamMessage>();
-            var accept = new Action<StreamMessage>(message => { ret.TrySetResult(message); });
+            var accept = new Action<StreamMessage>(message =>
+            {
+                ret.TrySetResult(message);
+            });
             var reject = new Action<Exception>(error =>
             {
-                Console.WriteLine(error.ToString());
                 ret.TrySetException(error);
             });
             oneTimeCallbacks.Add(key, (accept, reject));

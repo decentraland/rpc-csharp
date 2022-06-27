@@ -12522,7 +12522,7 @@ using rpc_csharp;`);
         return printer.getOutput();
     }
     if (serviceDescriptor.packageName.length > 0) {
-        printer.printLn(`namespace ${serviceDescriptor.packageName} {`);
+        printer.print(`namespace ${serviceDescriptor.packageName} {`);
     }
     // Services.
     serviceDescriptor.services.forEach((service) => {
@@ -12537,7 +12537,7 @@ using rpc_csharp;`);
             methodsPrinter.printEmptyLn();
             methodsPrinter.printIndentedLn(`public delegate ${type} ${method.nameAsPascalCase}(${requestType} request, Context context);`);
             if (method.responseStream) {
-                registerMethodPrinter.printLn(`    result.streamDefinition.Add("${method.nameAsPascalCase}", (payload, context) => { return ProtocolHelpers.SerializeMessageEnumerator(${method.nameAsCamelCase}(${requestType}.Parser.ParseFrom(payload), context)); });`);
+                registerMethodPrinter.printLn(`    result.streamDefinition.Add("${method.nameAsPascalCase}", (payload, context) => { return new ProtocolHelpers.StreamEnumerator<${responseType}>(${method.nameAsCamelCase}(${requestType}.Parser.ParseFrom(payload), context)); });`);
             }
             else {
                 registerMethodPrinter.printLn(`    result.definition.Add("${method.nameAsPascalCase}", async (payload, context) => { var res = await ${method.nameAsCamelCase}(${requestType}.Parser.ParseFrom(payload), context); return res?.ToByteString(); });`);
@@ -12554,14 +12554,13 @@ ${methodsPrinter.output}
       
 ${registerMethodPrinter.output}
     port.RegisterModule(ServiceName, (port) => UniTask.FromResult(result));
-  }
-    `);
+  }`);
         printer.printEmptyLn();
+        printer.printLn(`}`);
     });
     if (serviceDescriptor.packageName.length > 0) {
         printer.printLn(`}`);
     }
-    printer.printLn(`}`);
     return printer.getOutput();
 }
 

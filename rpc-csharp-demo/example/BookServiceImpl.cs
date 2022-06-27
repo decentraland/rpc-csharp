@@ -30,13 +30,13 @@ namespace rpc_csharp_demo.example
                     return QueryBooks(context);
                 });
 
-            IEnumerator<UniTask<Book>> QueryBooks(BookContext context)
+            IEnumerator<Book> QueryBooks(BookContext context)
             {
                 using (var iterator = context.books.AsEnumerable()!.GetEnumerator())
                 {
                     while (iterator.MoveNext())
                     {
-                        yield return new UniTask<Book>(iterator.Current);
+                        yield return new Book(iterator.Current);
                     }
                 }
             }

@@ -1,5 +1,8 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using System.Threading;
 using Google.Protobuf;
 
 namespace rpc_csharp.protocol
@@ -81,6 +84,78 @@ namespace rpc_csharp.protocol
                     var current = iterator.Current;
                     yield return current.ContinueWith(m => m.ToByteString());
                 }
+            }
+        }
+
+        public class StreamEnumerator<T> : IEnumerator<UniTask<ByteString>>
+            where T : IMessage
+        {
+            private readonly CancellationTokenSource cancellationTokenSource;
+            private UniTaskCompletionSource<ByteString> messageFuture;
+            private bool isDisposed = false;
+            private IEnumerator<T> enumerator;
+
+            public StreamEnumerator(IEnumerator<T> enumerator)
+            {
+                this.enumerator = enumerator;
+                cancellationTokenSource = new CancellationTokenSource();
+            }
+
+            public bool MoveNext()
+            {
+                if (isDisposed)
+                {
+                    return false;
+                }
+
+                if (messageFuture != null && !messageFuture.Task.GetAwaiter().IsCompleted)
+                {
+                    return true;
+                }
+
+                bool canMoveNext = false;
+                messageFuture = new UniTaskCompletionSource<ByteString>();
+
+                UniTask.Void(async (ct) =>
+                {
+                    while (enumerator.MoveNext())
+                    {
+                        if (ct.IsCancellationRequested)
+                        {
+                            canMoveNext = false;
+                            messageFuture.TrySetCanceled(ct);
+                            break;
+                        }
+                        canMoveNext = true;
+
+                        var current = enumerator.Current;
+                        if (current == null)
+                        {
+                            await UniTask.Yield();
+                            continue;
+                        }
+
+                        messageFuture.TrySetResult(current.ToByteString());
+                        break;
+                    }
+                }, cancellationTokenSource.Token);
+                
+                return canMoveNext;
+            }
+
+            public void Reset()
+            {
+            }
+
+            public UniTask<ByteString> Current => messageFuture.Task;
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose()
+            {
+                enumerator.Dispose();
+                cancellationTokenSource.Cancel();
+                isDisposed = true;
             }
         }
     }
