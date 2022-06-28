@@ -88,7 +88,7 @@ namespace rpc_csharp
 
         private static async UniTask SendStream(AckHelper ackHelper, ITransport transport, uint messageNumber,
             uint portId,
-            IEnumerator<UniTask<ByteString>> stream)
+            IUniTaskAsyncEnumerator<UniTask<ByteString>> stream)
         {
             uint sequenceNumber = 0;
 
@@ -116,9 +116,10 @@ namespace rpc_csharp
 
             // If this point is reached, then the client WANTS to consume an element of the
             // generator
-            using (var iterator = stream)
+
+            var iterator = stream;
             {
-                while (iterator.MoveNext())
+                while (await iterator.MoveNextAsync())
                 {
                     var elem = await iterator.Current;
                     sequenceNumber++;
@@ -135,6 +136,8 @@ namespace rpc_csharp
                         break;
                     }
                 }
+
+                await iterator.DisposeAsync();
             }
 
             transport.SendMessage(ProtocolHelpers.CloseStreamMessage(messageNumber, sequenceNumber, portId));
@@ -165,7 +168,7 @@ namespace rpc_csharp
                 transport.SendMessage(response.ToByteArray());
             }
             else if (port.TryCallStreamProcedure(message.ProcedureId, message.Payload, context,
-                out IEnumerator<UniTask<ByteString>> streamResult))
+                out IUniTaskAsyncEnumerator<UniTask<ByteString>> streamResult))
             {
                 await SendStream(ackHelper, transport, messageNumber, port.portId, streamResult);
             }

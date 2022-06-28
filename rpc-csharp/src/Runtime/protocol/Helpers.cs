@@ -1,8 +1,5 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using System.Threading;
 using Google.Protobuf;
 
 namespace rpc_csharp.protocol
@@ -87,46 +84,34 @@ namespace rpc_csharp.protocol
             }
         }
 
-        public class StreamEnumerator<T> : IEnumerator<UniTask<ByteString>>
-            where T : IMessage
+        public class StreamEnumerator<T> : IUniTaskAsyncEnumerator<UniTask<ByteString>> where T : IMessage
         {
-            private readonly CancellationTokenSource cancellationTokenSource;
+            private readonly IEnumerator<T> enumerator;
+
             private UniTaskCompletionSource<ByteString> messageFuture;
             private bool isDisposed = false;
-            private IEnumerator<T> enumerator;
-
+            
             public StreamEnumerator(IEnumerator<T> enumerator)
             {
                 this.enumerator = enumerator;
-                cancellationTokenSource = new CancellationTokenSource();
+            }
+            
+            public async UniTask DisposeAsync()
+            {
+                isDisposed = true;
+                enumerator.Dispose();
             }
 
-            public bool MoveNext()
+            public UniTask<bool> MoveNextAsync()
             {
-                if (isDisposed)
-                {
-                    return false;
-                }
-
-                if (messageFuture != null && !messageFuture.Task.GetAwaiter().IsCompleted)
-                {
-                    return true;
-                }
-
-                bool canMoveNext = false;
-                messageFuture = new UniTaskCompletionSource<ByteString>();
-
-                UniTask.Void(async (ct) =>
+                return UniTask.Create(async () =>
                 {
                     while (enumerator.MoveNext())
                     {
-                        if (ct.IsCancellationRequested)
+                        if (isDisposed)
                         {
-                            canMoveNext = false;
-                            messageFuture.TrySetCanceled(ct);
-                            break;
+                            return false;
                         }
-                        canMoveNext = true;
 
                         var current = enumerator.Current;
                         if (current == null)
@@ -135,28 +120,16 @@ namespace rpc_csharp.protocol
                             continue;
                         }
 
+                        messageFuture = new UniTaskCompletionSource<ByteString>();
                         messageFuture.TrySetResult(current.ToByteString());
-                        break;
+                        return true;
                     }
-                }, cancellationTokenSource.Token);
-                
-                return canMoveNext;
-            }
 
-            public void Reset()
-            {
+                    return false;
+                });
             }
 
             public UniTask<ByteString> Current => messageFuture.Task;
-
-            object IEnumerator.Current => Current;
-
-            public void Dispose()
-            {
-                enumerator.Dispose();
-                cancellationTokenSource.Cancel();
-                isDisposed = true;
-            }
         }
     }
 }

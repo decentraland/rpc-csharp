@@ -14,7 +14,7 @@ namespace rpc_csharp
 
     public delegate UniTask<ByteString> UnaryCallback<in TContext>(ByteString payload, TContext context);
 
-    public delegate IEnumerator<UniTask<ByteString>> StreamCallback<in TContext>(ByteString payload,
+    public delegate IUniTaskAsyncEnumerator<UniTask<ByteString>> StreamCallback<in TContext>(ByteString payload,
         TContext context);
 
     public delegate UniTask<ServerModuleDefinition<TContext>> ModuleGeneratorFunction<TContext>(
