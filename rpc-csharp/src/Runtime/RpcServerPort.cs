@@ -80,7 +80,7 @@ namespace rpc_csharp
         }
 
         public bool TryCallStreamProcedure(uint procedureId, ByteString payload, TContext context,
-            out IEnumerator<UniTask<ByteString>> result)
+            out IUniTaskAsyncEnumerator<UniTask<ByteString>> result)
         {
             if (streamProcedures.TryGetValue(procedureId, out StreamCallback<TContext> streamProcedure))
             {
