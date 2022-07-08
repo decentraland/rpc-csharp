@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 using rpc_csharp.transport;
@@ -12,7 +13,8 @@ namespace rpc_csharp
         TContext context
     );
 
-    public delegate UniTask<ByteString> UnaryCallback<in TContext>(ByteString payload, TContext context);
+    public delegate UniTask<ByteString> UnaryCallback<in TContext>(ByteString payload, TContext context,
+        CancellationToken ct);
 
     public delegate IUniTaskAsyncEnumerator<UniTask<ByteString>> StreamCallback<in TContext>(ByteString payload,
         TContext context);

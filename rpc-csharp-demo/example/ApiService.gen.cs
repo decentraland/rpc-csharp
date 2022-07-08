@@ -3,6 +3,7 @@
 // package: Proto
 // file: api.proto
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 using rpc_csharp.protocol;
@@ -12,15 +13,15 @@ public abstract class BookService<Context>
 {
   public const string ServiceName = "BookService";
 
-  public delegate UniTask<Book> GetBook(GetBookRequest request, Context context);
+  public delegate UniTask<Book> GetBook(GetBookRequest request, Context context , CancellationToken ct);
 
-  public delegate IEnumerator<Book> QueryBooks(QueryBooksRequest request, Context context);
+  public delegate IEnumerator<Book> QueryBooks(QueryBooksRequest request, Context context );
 
   public static void RegisterService(RpcServerPort<Context> port, GetBook getBook, QueryBooks queryBooks)
   {
     var result = new ServerModuleDefinition<Context>();
       
-    result.definition.Add("GetBook", async (payload, context) => { var res = await getBook(GetBookRequest.Parser.ParseFrom(payload), context); return res?.ToByteString(); });
+    result.definition.Add("GetBook", async (payload, context, ct) => { var res = await getBook(GetBookRequest.Parser.ParseFrom(payload), context, ct); return res?.ToByteString(); });
     result.streamDefinition.Add("QueryBooks", (payload, context) => { return new ProtocolHelpers.StreamEnumerator<Book>(queryBooks(QueryBooksRequest.Parser.ParseFrom(payload), context)); });
 
     port.RegisterModule(ServiceName, (port) => UniTask.FromResult(result));

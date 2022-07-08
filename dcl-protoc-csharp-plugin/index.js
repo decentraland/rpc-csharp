@@ -550,13 +550,7 @@ jspb.Message.messageSetExtensionsBinary={};jspb.Export={}; true&&(exports.Map=js
 
 var jspb = __nccwpck_require__(917);
 var goog = jspb;
-var global = (function() {
-  if (this) { return this; }
-  if (typeof window !== 'undefined') { return window; }
-  if (typeof global !== 'undefined') { return global; }
-  if (typeof self !== 'undefined') { return self; }
-  return Function('return this')();
-}.call(null));
+var global = (function() { return this || window || global || self || Function('return this')(); }).call(null);
 
 var google_protobuf_descriptor_pb = __nccwpck_require__(474);
 goog.object.extend(proto, google_protobuf_descriptor_pb);
@@ -1831,13 +1825,7 @@ goog.object.extend(exports, proto.google.protobuf.compiler);
 
 var jspb = __nccwpck_require__(917);
 var goog = jspb;
-var global = (function() {
-  if (this) { return this; }
-  if (typeof window !== 'undefined') { return window; }
-  if (typeof global !== 'undefined') { return global; }
-  if (typeof self !== 'undefined') { return self; }
-  return Function('return this')();
-}.call(null));
+var global = (function() { return this || window || global || self || Function('return this')(); }).call(null);
 
 goog.exportSymbol('proto.google.protobuf.DescriptorProto', null, global);
 goog.exportSymbol('proto.google.protobuf.DescriptorProto.ExtensionRange', null, global);
@@ -8679,6 +8667,7 @@ proto.google.protobuf.FieldOptions.toObject = function(includeInstance, msg) {
     packed: (f = jspb.Message.getBooleanField(msg, 2)) == null ? undefined : f,
     jstype: jspb.Message.getFieldWithDefault(msg, 6, 0),
     lazy: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
+    unverifiedLazy: jspb.Message.getBooleanFieldWithDefault(msg, 15, false),
     deprecated: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
     weak: jspb.Message.getBooleanFieldWithDefault(msg, 10, false),
     uninterpretedOptionList: jspb.Message.toObjectList(msg.getUninterpretedOptionList(),
@@ -8737,6 +8726,10 @@ proto.google.protobuf.FieldOptions.deserializeBinaryFromReader = function(msg, r
     case 5:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setLazy(value);
+      break;
+    case 15:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setUnverifiedLazy(value);
       break;
     case 3:
       var value = /** @type {boolean} */ (reader.readBool());
@@ -8808,6 +8801,13 @@ proto.google.protobuf.FieldOptions.serializeBinaryToWriter = function(message, w
   if (f != null) {
     writer.writeBool(
       5,
+      f
+    );
+  }
+  f = /** @type {boolean} */ (jspb.Message.getField(message, 15));
+  if (f != null) {
+    writer.writeBool(
+      15,
       f
     );
   }
@@ -8997,6 +8997,42 @@ proto.google.protobuf.FieldOptions.prototype.clearLazy = function() {
  */
 proto.google.protobuf.FieldOptions.prototype.hasLazy = function() {
   return jspb.Message.getField(this, 5) != null;
+};
+
+
+/**
+ * optional bool unverified_lazy = 15;
+ * @return {boolean}
+ */
+proto.google.protobuf.FieldOptions.prototype.getUnverifiedLazy = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 15, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.google.protobuf.FieldOptions} returns this
+ */
+proto.google.protobuf.FieldOptions.prototype.setUnverifiedLazy = function(value) {
+  return jspb.Message.setField(this, 15, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.google.protobuf.FieldOptions} returns this
+ */
+proto.google.protobuf.FieldOptions.prototype.clearUnverifiedLazy = function() {
+  return jspb.Message.setField(this, 15, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.google.protobuf.FieldOptions.prototype.hasUnverifiedLazy = function() {
+  return jspb.Message.getField(this, 15) != null;
 };
 
 
@@ -12511,6 +12547,7 @@ function generateServerTypeScriptDefinition(fileDescriptor, exportMap) {
 // package: ${serviceDescriptor.packageName}
 // file: ${serviceDescriptor.filename}
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 using rpc_csharp.protocol;
@@ -12535,12 +12572,12 @@ using rpc_csharp;`);
             let type = method.responseStream ? `IEnumerator<${responseType}>` : `UniTask<${responseType}>`;
             serviceHeaderPrinter.print(`, ${method.nameAsPascalCase} ${method.nameAsCamelCase}`);
             methodsPrinter.printEmptyLn();
-            methodsPrinter.printIndentedLn(`public delegate ${type} ${method.nameAsPascalCase}(${requestType} request, Context context);`);
+            methodsPrinter.printIndentedLn(`public delegate ${type} ${method.nameAsPascalCase}(${requestType} request, Context context ${!method.responseStream ? ", CancellationToken ct" : ""});`);
             if (method.responseStream) {
                 registerMethodPrinter.printLn(`    result.streamDefinition.Add("${method.nameAsPascalCase}", (payload, context) => { return new ProtocolHelpers.StreamEnumerator<${responseType}>(${method.nameAsCamelCase}(${requestType}.Parser.ParseFrom(payload), context)); });`);
             }
             else {
-                registerMethodPrinter.printLn(`    result.definition.Add("${method.nameAsPascalCase}", async (payload, context) => { var res = await ${method.nameAsCamelCase}(${requestType}.Parser.ParseFrom(payload), context); return res?.ToByteString(); });`);
+                registerMethodPrinter.printLn(`    result.definition.Add("${method.nameAsPascalCase}", async (payload, context, ct) => { var res = await ${method.nameAsCamelCase}(${requestType}.Parser.ParseFrom(payload), context, ct); return res?.ToByteString(); });`);
             }
         });
         printer.print(`

@@ -39,7 +39,7 @@ namespace rpc_csharp_test
             rpcServer.SetHandler((port, transport, testContext) =>
             {
                 BookService<BookContext>.RegisterService(port,
-                    async (request, context) =>
+                    async (request, context, ct) =>
                     {
                         foreach (var book in context.books)
                         {

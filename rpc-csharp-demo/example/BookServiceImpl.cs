@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Cysharp.Threading.Tasks;
 using Proto;
 using rpc_csharp;
 
@@ -16,7 +15,7 @@ namespace rpc_csharp_demo.example
         public static void RegisterService(RpcServerPort<BookContext> port)
         {
             BookService<BookContext>.RegisterService(port,
-                async (request, context) =>
+                async (request, context, ct) =>
                 {
                     return new Book()
                     {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 using Google.Protobuf.Collections;
@@ -8,7 +9,7 @@ using rpc_csharp.transport;
 
 namespace rpc_csharp
 {
-    public class RpcServer<TContext>
+    public class RpcServer<TContext> : IDisposable
     {
         private uint lastPortId = 0;
 
@@ -16,6 +17,8 @@ namespace rpc_csharp
             new Dictionary<uint, RpcServerPort<TContext>>();
 
         private RpcServerHandler<TContext> handler;
+
+        private readonly CancellationTokenSource cancellationTokenSource;
 
         private static StreamMessage reusedStreamMessage = new StreamMessage()
         {
@@ -26,13 +29,20 @@ namespace rpc_csharp
 
         public RpcServer()
         {
+            cancellationTokenSource = new CancellationTokenSource();
+        }
+
+        public void Dispose()
+        {
+            cancellationTokenSource.Cancel();
+            cancellationTokenSource.Dispose();
         }
 
         private RpcServerPort<TContext> HandleCreatePort(CreatePort message, uint messageNumber, TContext context,
             ITransport transport)
         {
             ++lastPortId;
-            var port = new RpcServerPort<TContext>(lastPortId, message.PortName);
+            var port = new RpcServerPort<TContext>(lastPortId, message.PortName, cancellationTokenSource.Token);
             ports.Add(port.portId, port);
 
             handler?.Invoke(port, transport, context);

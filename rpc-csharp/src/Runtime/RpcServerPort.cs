@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 
@@ -19,16 +20,22 @@ namespace rpc_csharp
         private readonly Dictionary<string, ModuleGeneratorFunction<TContext>> registeredModules =
             new Dictionary<string, ModuleGeneratorFunction<TContext>>();
 
+        private readonly CancellationTokenSource cancellationTokenSource;
+        private readonly CancellationTokenSource portClosedCancellationTokenSource;
+
         private uint proceduresCount = 0;
 
         public event Action OnClose;
         public uint portId { get; }
         public string portName { get; }
 
-        public RpcServerPort(uint portId, string portName)
+        public RpcServerPort(uint portId, string portName, CancellationToken ct)
         {
             this.portId = portId;
             this.portName = portName;
+            portClosedCancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource =
+                CancellationTokenSource.CreateLinkedTokenSource(ct, portClosedCancellationTokenSource.Token);
         }
 
         public void Close()
@@ -37,6 +44,9 @@ namespace rpc_csharp
             procedures.Clear();
             streamProcedures.Clear();
             registeredModules.Clear();
+            portClosedCancellationTokenSource.Cancel();
+            portClosedCancellationTokenSource.Dispose();
+            cancellationTokenSource.Dispose();
             OnClose?.Invoke();
         }
 
@@ -75,7 +85,7 @@ namespace rpc_csharp
             if (!procedures.TryGetValue(procedureId, out UnaryCallback<TContext> unaryCallback))
                 return (called: false, result: null);
 
-            var result = await unaryCallback(payload, context);
+            var result = await unaryCallback(payload, context, cancellationTokenSource.Token);
             return (called: true, result);
         }
 
