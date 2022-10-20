@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Contexts;
 using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
 using Google.Protobuf;
 using NUnit.Framework;
 using Proto;
@@ -17,7 +18,7 @@ namespace rpc_csharp_test
         private ITransport server;
         private BookContext context;
 
-        internal class BookContext
+        public class BookContext
         {
             public Book[] books;
         }
@@ -59,15 +60,18 @@ namespace rpc_csharp_test
             });
         }
 
-        IEnumerator<Book> QueryBooks(QueryBooksRequest request, BookContext context)
+        IUniTaskAsyncEnumerable<Book> QueryBooks(QueryBooksRequest request, BookContext context)
         {
-            using (var iterator = context.books.AsEnumerable()!.GetEnumerator())
+            return UniTaskAsyncEnumerable.Create<Book>(async (writer, token) =>
             {
-                while (iterator.MoveNext())
+                using (var iterator = context.books.AsEnumerable()!.GetEnumerator())
                 {
-                    yield return iterator.Current;
+                    while (iterator.MoveNext() && !token.IsCancellationRequested)
+                    {
+                        await writer.YieldAsync(iterator.Current); // instead of `yield return`
+                    }
                 }
-            }
+            });
         }
 
         private void CreatePort(TransportAsyncWrapper clientWrapper)

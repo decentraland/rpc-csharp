@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
 using NUnit.Framework;
 using Proto;
 using rpc_csharp;
@@ -57,15 +58,18 @@ namespace rpc_csharp_test
             testClient = await TestClient.Create(client, BookService<BookContext>.ServiceName);
         }
 
-        IEnumerator<Book> QueryBooks(QueryBooksRequest request, BookContext context)
+        IUniTaskAsyncEnumerable<Book> QueryBooks(QueryBooksRequest request, BookContext context)
         {
-            using (var iterator = context.books.AsEnumerable()!.GetEnumerator())
+            return UniTaskAsyncEnumerable.Create<Book>(async (writer, token) =>
             {
-                while (iterator.MoveNext())
+                using (var iterator = context.books.AsEnumerable()!.GetEnumerator())
                 {
-                    yield return iterator.Current;
+                    while (iterator.MoveNext() && !token.IsCancellationRequested)
+                    {
+                        await writer.YieldAsync(iterator.Current); // instead of `yield return`
+                    }
                 }
-            }
+            });
         }
 
         [Test]

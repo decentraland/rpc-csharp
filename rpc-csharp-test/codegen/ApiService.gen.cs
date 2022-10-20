@@ -15,14 +15,27 @@ public abstract class BookService<Context>
 
   public delegate UniTask<Book> GetBook(GetBookRequest request, Context context , CancellationToken ct);
 
-  public delegate IEnumerator<Book> QueryBooks(QueryBooksRequest request, Context context );
+  public delegate IUniTaskAsyncEnumerable<Book> QueryBooks(QueryBooksRequest request, Context context );
+  
+  public delegate UniTask<Book> ClientStream(IUniTaskAsyncEnumerable<QueryBooksRequest> request, Context context );
+  
+  public delegate IUniTaskAsyncEnumerable<Book> BidiStream(IUniTaskAsyncEnumerable<QueryBooksRequest> request, Context context );
 
-  public static void RegisterService(RpcServerPort<Context> port, GetBook getBook, QueryBooks queryBooks)
+  public static void RegisterService(RpcServerPort<Context> port, GetBook getBook, QueryBooks queryBooks, ClientStream clientStream, BidiStream bidiStream)
   {
     var result = new ServerModuleDefinition<Context>();
       
     result.definition.Add("GetBook", async (payload, context, ct) => { var res = await getBook(GetBookRequest.Parser.ParseFrom(payload), context, ct); return res?.ToByteString(); });
-    result.streamDefinition.Add("QueryBooks", (payload, context) => { return new ProtocolHelpers.StreamEnumerator<Book>(queryBooks(QueryBooksRequest.Parser.ParseFrom(payload), context)); });
+    result.serverStreamDefinition.Add("QueryBooks", (payload, context) => { return ProtocolHelpers.SerializeMessageEnumerator<Book>(queryBooks(QueryBooksRequest.Parser.ParseFrom(payload), context)); });
+    result.clientStreamDefinition.Add("GetBook", async (IUniTaskAsyncEnumerable<ByteString> payload, Context context) => {
+      return (await clientStream(
+        ProtocolHelpers.DeserializeMessageEnumerator<QueryBooksRequest>(payload, s => QueryBooksRequest.Parser.ParseFrom(s)), context))?.ToByteString();
+    });
+    
+    result.bidirectionalStreamDefinition.Add("BidiStream", (IUniTaskAsyncEnumerable<ByteString> payload, Context context) => {
+      return ProtocolHelpers.SerializeMessageEnumerator<Book>(bidiStream(
+        ProtocolHelpers.DeserializeMessageEnumerator<QueryBooksRequest>(payload, s => QueryBooksRequest.Parser.ParseFrom(s)), context));
+    });
 
     port.RegisterModule(ServiceName, (port) => UniTask.FromResult(result));
   }

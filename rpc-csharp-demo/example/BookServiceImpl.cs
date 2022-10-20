@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
 using Proto;
 using rpc_csharp;
 
@@ -26,18 +28,21 @@ namespace rpc_csharp_demo.example
                 },
                 (request, context) =>
                 {
-                    return QueryBooks(context);
+                    return QueryBooks(request, context);
                 });
 
-            IEnumerator<Book> QueryBooks(BookContext context)
+            IUniTaskAsyncEnumerable<Book> QueryBooks(QueryBooksRequest request, BookContext context)
             {
-                using (var iterator = context.books.AsEnumerable()!.GetEnumerator())
+                return UniTaskAsyncEnumerable.Create<Book>(async (writer, token) =>
                 {
-                    while (iterator.MoveNext())
+                    using (var iterator = context.books.AsEnumerable()!.GetEnumerator())
                     {
-                        yield return new Book(iterator.Current);
+                        while (iterator.MoveNext() && !token.IsCancellationRequested)
+                        {
+                            await writer.YieldAsync(iterator.Current); // instead of `yield return`
+                        }
                     }
-                }
+                });
             }
         }
     }

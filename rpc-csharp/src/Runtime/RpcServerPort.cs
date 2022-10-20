@@ -14,11 +14,20 @@ namespace rpc_csharp
         private readonly Dictionary<uint, UnaryCallback<TContext>> procedures =
             new Dictionary<uint, UnaryCallback<TContext>>();
 
-        private readonly Dictionary<uint, StreamCallback<TContext>> streamProcedures =
-            new Dictionary<uint, StreamCallback<TContext>>();
+        private readonly Dictionary<uint, ServerStreamCallback<TContext>> serverStreamProcedures =
+            new Dictionary<uint, ServerStreamCallback<TContext>>();
+        
+        private readonly Dictionary<uint, ClientStreamCallback<TContext>> clientStreamProcedures =
+            new Dictionary<uint, ClientStreamCallback<TContext>>();
+        
+        private readonly Dictionary<uint, BidirectionalStreamCallback<TContext>> bidirectionalStreamProcedures =
+            new Dictionary<uint, BidirectionalStreamCallback<TContext>>();
 
         private readonly Dictionary<string, ModuleGeneratorFunction<TContext>> registeredModules =
             new Dictionary<string, ModuleGeneratorFunction<TContext>>();
+        
+        public readonly Dictionary<uint, CallType> procedureNameToType =
+            new Dictionary<uint, CallType>();
 
         private readonly CancellationTokenSource cancellationTokenSource;
         private readonly CancellationTokenSource portClosedCancellationTokenSource;
@@ -42,7 +51,9 @@ namespace rpc_csharp
         {
             loadedModules.Clear();
             procedures.Clear();
-            streamProcedures.Clear();
+            serverStreamProcedures.Clear();
+            clientStreamProcedures.Clear();
+            bidirectionalStreamProcedures.Clear();
             registeredModules.Clear();
             portClosedCancellationTokenSource.Cancel();
             portClosedCancellationTokenSource.Dispose();
@@ -89,12 +100,34 @@ namespace rpc_csharp
             return (called: true, result);
         }
 
-        public bool TryCallStreamProcedure(uint procedureId, ByteString payload, TContext context,
-            out IUniTaskAsyncEnumerator<UniTask<ByteString>> result)
+        public CallType GetProcedureType(uint procedureId)
         {
-            if (streamProcedures.TryGetValue(procedureId, out StreamCallback<TContext> streamProcedure))
+            return procedureNameToType.TryGetValue(procedureId, out CallType type) ? type : CallType.Unknown;
+        }
+        public bool TryCallServerStreamProcedure(uint procedureId, ByteString payload, TContext context,
+            out IUniTaskAsyncEnumerable<ByteString> result)
+        {
+            if (serverStreamProcedures.TryGetValue(procedureId, out ServerStreamCallback<TContext> streamProcedure))
             {
                 result = streamProcedure(payload, context);
+                return true;
+            }
+
+            result = default;
+            return false;
+        }
+        
+        public async UniTask<ByteString> TryCallClientStreamProcedure(uint procedureId, IUniTaskAsyncEnumerable<ByteString> payload, TContext context)
+        {
+            return clientStreamProcedures.TryGetValue(procedureId, out ClientStreamCallback<TContext> clientStreamProcedure) ? await clientStreamProcedure(payload, context) : null;
+        }
+        
+        public bool TryCallBidiStreamProcedure(uint procedureId, IUniTaskAsyncEnumerable<ByteString> payload, TContext context,
+            out IUniTaskAsyncEnumerable<ByteString> result)
+        {
+            if (bidirectionalStreamProcedures.TryGetValue(procedureId, out BidirectionalStreamCallback<TContext> bidiStreamProcedure))
+            {
+                result = bidiStreamProcedure(payload, context);
                 return true;
             }
 
@@ -108,29 +141,43 @@ namespace rpc_csharp
             var module = await moduleFuture;
 
             var moduleUnaryDefinitions = module.definition;
-            var moduleStreamDefinitions = module.streamDefinition;
+            var moduleServerStreamDefinitions = module.serverStreamDefinition;
+            var moduleClientStreamDefinitions = module.clientStreamDefinition;
+            var moduleBidiStreamDefinitions = module.bidirectionalStreamDefinition;
+            var count = moduleUnaryDefinitions.Count + moduleServerStreamDefinitions.Count +
+                                  moduleClientStreamDefinitions.Count + moduleBidiStreamDefinitions.Count;  
 
             var ret = new ServerModuleDeclaration()
             {
                 procedures =
-                    new List<ServerModuleProcedureInfo>(moduleUnaryDefinitions.Count + moduleStreamDefinitions.Count)
+                    new List<ServerModuleProcedureInfo>(count)
             };
 
             using (var iterator = moduleUnaryDefinitions.GetEnumerator())
             {
-                LoadProcedures(iterator, procedures, ret.procedures);
+                LoadProcedures(iterator, procedures, ret.procedures, CallType.Unary);
             }
 
-            using (var iterator = moduleStreamDefinitions.GetEnumerator())
+            using (var iterator = moduleServerStreamDefinitions.GetEnumerator())
             {
-                LoadProcedures(iterator, streamProcedures, ret.procedures);
+                LoadProcedures(iterator, serverStreamProcedures, ret.procedures, CallType.ServerStream);
+            }
+            
+            using (var iterator = moduleClientStreamDefinitions.GetEnumerator())
+            {
+                LoadProcedures(iterator, clientStreamProcedures, ret.procedures, CallType.ClientStream);
+            }
+            
+            using (var iterator = moduleBidiStreamDefinitions.GetEnumerator())
+            {
+                LoadProcedures(iterator, bidirectionalStreamProcedures, ret.procedures, CallType.BidirectionalStream);
             }
 
             return ret;
         }
 
         private void LoadProcedures<T>(IEnumerator<KeyValuePair<string, T>> procedureDefinition,
-            IDictionary<uint, T> procedureMap, ICollection<ServerModuleProcedureInfo> infoList)
+            IDictionary<uint, T> procedureMap, ICollection<ServerModuleProcedureInfo> infoList, CallType type)
         {
             while (procedureDefinition.MoveNext())
             {
@@ -139,6 +186,7 @@ namespace rpc_csharp
                 procedureMap.Add(procedureId, procedureDefinition.Current.Value);
 
                 infoList.Add(new ServerModuleProcedureInfo(procedureId, procedureName));
+                procedureNameToType.Add(procedureId, type);
             }
         }
     }
