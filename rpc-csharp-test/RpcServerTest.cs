@@ -167,6 +167,16 @@ namespace rpc_csharp_test
                     {
                         ProcedureId = 1,
                         ProcedureName = "QueryBooks",
+                    },
+                    new ModuleProcedure()
+                    {
+                        ProcedureId = 2,
+                        ProcedureName = "GetBookStream",
+                    },
+                    new ModuleProcedure()
+                    {
+                        ProcedureId = 3,
+                        ProcedureName = "QueryBooksStream",
                     }
                 }
             };
