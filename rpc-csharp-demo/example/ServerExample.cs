@@ -1,52 +1,9 @@
 using System;
-using Cysharp.Threading.Tasks;
-using Proto;
 using rpc_csharp;
 using WebSocketSharp.Server;
 
 namespace rpc_csharp_demo.example
 {
-    /*class TestBinder<Context> : ServiceBinderBase
-    {
-        public Dictionary<string, UnaryCallback<Context>> unaryMethods;
-        public ModuleGeneratorFunction<Context> GetModuleDefinition()
-        {
-            return port =>
-            {
-                var definition = new Dictionary<string, UnaryCallback<Context>>();
-                definition.Add(
-                {
-                    
-                });
-                return Task.FromResult(new ServerModuleDefinition<Context>
-                {
-                    definition =
-                    {
-                        
-                    }
-                });
-            };
-        }
-
-        public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, UnaryServerMethod<TRequest, TResponse> handler)
-        {
-            unaryMethods.Add(method.FullName, (payload, context) =>
-            {
-                return handler.Invoke();
-            });
-            base.AddMethod(method, handler);
-        }
-
-        public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, ClientStreamingServerMethod<TRequest, TResponse> handler)
-        {
-            base.AddMethod(method, handler);
-        }
-
-        public override void AddMethod<TRequest, TResponse>(Method<TRequest, TResponse> method, ServerStreamingServerMethod<TRequest, TResponse> handler)
-        {
-            base.AddMethod(method, handler);
-        }
-    }*/
     public static class ServerExample
     {
         public static void Run()
@@ -59,10 +16,7 @@ namespace rpc_csharp_demo.example
                     new Book() {Author = "mr cazala", Isbn = 1111, Title = "Advanced CSS"},
                     new Book() {Author = "mr mannakia", Isbn = 7666, Title = "Advanced binary packing"},
                     new Book() {Author = "mr kuruk", Isbn = 7668, Title = "Advanced bots AI"},
-                    /*new Book() { Title = "Pato", Author = "QuiereAsado", Isbn = 1234 },
-                    new Book() { Title = "Title2", Author = "Owen", Isbn = 5678 },
-                    new Book() { Title = "Title3", Author = "Bardock", Isbn = 5678 },
-                    new Book() { Title = "Rpc onion layers", Author = "menduz", Isbn = 19997 }*/
+                    new Book() {Author = "mr pato", Isbn = 777, Title = "Buy him a thermo"},
                 }
             };
 
@@ -86,31 +40,8 @@ namespace rpc_csharp_demo.example
             });
 
             wss.Start();
-
-/*
-
-  console.log("> Creating server")
-  const rpcServer = createRpcServer<TestContext>({})
-  // the handler function will be called every time a port is created.
-  // it should register the available APIs/Modules for the specified port
-  rpcServer.setHandler(async function handler(port) {
-    console.log("  Creating server port: " + port.portName)
-    registerBookServiceServerImplementation(port)
-  })
-
-  console.log("> Creating client and server MemoryTransport")
-  const wss = new WebSocketServer({ port: 8080 })
-  wss.on('connection', function connection(ws: any, req: any) {
-    const serverSocket = WebSocketTransport(ws)
-
-    // connect the "socket" to the server
-    console.log("> Attaching transport")
-    rpcServer.attachTransport(serverSocket, context)
-
-    wss.close()
-  })
-
-*/
+            
+            while(true) {}
         }
     }
 }

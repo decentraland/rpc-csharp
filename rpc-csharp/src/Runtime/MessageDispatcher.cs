@@ -48,6 +48,7 @@ namespace rpc_csharp
                 if (parsedMessage != null)
                 {
                     var (messageType, message, messageNumber) = parsedMessage.Value;
+                    Console.WriteLine($"From Dispatcher: {messageNumber} {messageType}");
                     OnParsedMessage?.Invoke(new ParsedMessage(messageType, message, messageNumber));
                 }
             };

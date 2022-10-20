@@ -33,25 +33,25 @@ public static partial class IndexReflection {
           "KAsyEC5Nb2R1bGVQcm9jZWR1cmUiOgoLRGVzdHJveVBvcnQSGgoSbWVzc2Fn",
           "ZV9pZGVudGlmaWVyGAEgASgHEg8KB3BvcnRfaWQYAiABKAciPwoPTW9kdWxl",
           "UHJvY2VkdXJlEhQKDHByb2NlZHVyZV9pZBgBIAEoBxIWCg5wcm9jZWR1cmVf",
-          "bmFtZRgCIAEoCSJdCgdSZXF1ZXN0EhoKEm1lc3NhZ2VfaWRlbnRpZmllchgB",
-          "IAEoBxIPCgdwb3J0X2lkGAIgASgHEhQKDHByb2NlZHVyZV9pZBgEIAEoBxIP",
-          "CgdwYXlsb2FkGAYgASgMIlQKC1JlbW90ZUVycm9yEhoKEm1lc3NhZ2VfaWRl",
-          "bnRpZmllchgBIAEoBxISCgplcnJvcl9jb2RlGAIgASgHEhUKDWVycm9yX21l",
-          "c3NhZ2UYAyABKAkiNwoIUmVzcG9uc2USGgoSbWVzc2FnZV9pZGVudGlmaWVy",
-          "GAEgASgHEg8KB3BheWxvYWQYBiABKAwifwoNU3RyZWFtTWVzc2FnZRIaChJt",
-          "ZXNzYWdlX2lkZW50aWZpZXIYASABKAcSDwoHcG9ydF9pZBgCIAEoBxITCgtz",
-          "ZXF1ZW5jZV9pZBgEIAEoBxIPCgdwYXlsb2FkGAYgASgMEg4KBmNsb3NlZBgH",
-          "IAEoCBILCgNhY2sYCCABKAgqtgMKD1JwY01lc3NhZ2VUeXBlcxIZChVScGNN",
-          "ZXNzYWdlVHlwZXNfRU1QVFkQABIbChdScGNNZXNzYWdlVHlwZXNfUkVRVUVT",
-          "VBABEhwKGFJwY01lc3NhZ2VUeXBlc19SRVNQT05TRRACEiIKHlJwY01lc3Nh",
-          "Z2VUeXBlc19TVFJFQU1fTUVTU0FHRRADEh4KGlJwY01lc3NhZ2VUeXBlc19T",
-          "VFJFQU1fQUNLEAQSHwobUnBjTWVzc2FnZVR5cGVzX0NSRUFURV9QT1JUEAUS",
-          "KAokUnBjTWVzc2FnZVR5cGVzX0NSRUFURV9QT1JUX1JFU1BPTlNFEAYSIgoe",
-          "UnBjTWVzc2FnZVR5cGVzX1JFUVVFU1RfTU9EVUxFEAcSKwonUnBjTWVzc2Fn",
-          "ZVR5cGVzX1JFUVVFU1RfTU9EVUxFX1JFU1BPTlNFEAgSKQolUnBjTWVzc2Fn",
-          "ZVR5cGVzX1JFTU9URV9FUlJPUl9SRVNQT05TRRAJEiAKHFJwY01lc3NhZ2VU",
-          "eXBlc19ERVNUUk9ZX1BPUlQQChIgChxScGNNZXNzYWdlVHlwZXNfU0VSVkVS",
-          "X1JFQURZEAtiBnByb3RvMw=="));
+          "bmFtZRgCIAEoCSJ0CgdSZXF1ZXN0EhoKEm1lc3NhZ2VfaWRlbnRpZmllchgB",
+          "IAEoBxIPCgdwb3J0X2lkGAIgASgHEhQKDHByb2NlZHVyZV9pZBgEIAEoBxIV",
+          "Cg1jbGllbnRfc3RyZWFtGAUgASgHEg8KB3BheWxvYWQYBiABKAwiVAoLUmVt",
+          "b3RlRXJyb3ISGgoSbWVzc2FnZV9pZGVudGlmaWVyGAEgASgHEhIKCmVycm9y",
+          "X2NvZGUYAiABKAcSFQoNZXJyb3JfbWVzc2FnZRgDIAEoCSI3CghSZXNwb25z",
+          "ZRIaChJtZXNzYWdlX2lkZW50aWZpZXIYASABKAcSDwoHcGF5bG9hZBgGIAEo",
+          "DCJ/Cg1TdHJlYW1NZXNzYWdlEhoKEm1lc3NhZ2VfaWRlbnRpZmllchgBIAEo",
+          "BxIPCgdwb3J0X2lkGAIgASgHEhMKC3NlcXVlbmNlX2lkGAQgASgHEg8KB3Bh",
+          "eWxvYWQYBiABKAwSDgoGY2xvc2VkGAcgASgIEgsKA2FjaxgIIAEoCCq2AwoP",
+          "UnBjTWVzc2FnZVR5cGVzEhkKFVJwY01lc3NhZ2VUeXBlc19FTVBUWRAAEhsK",
+          "F1JwY01lc3NhZ2VUeXBlc19SRVFVRVNUEAESHAoYUnBjTWVzc2FnZVR5cGVz",
+          "X1JFU1BPTlNFEAISIgoeUnBjTWVzc2FnZVR5cGVzX1NUUkVBTV9NRVNTQUdF",
+          "EAMSHgoaUnBjTWVzc2FnZVR5cGVzX1NUUkVBTV9BQ0sQBBIfChtScGNNZXNz",
+          "YWdlVHlwZXNfQ1JFQVRFX1BPUlQQBRIoCiRScGNNZXNzYWdlVHlwZXNfQ1JF",
+          "QVRFX1BPUlRfUkVTUE9OU0UQBhIiCh5ScGNNZXNzYWdlVHlwZXNfUkVRVUVT",
+          "VF9NT0RVTEUQBxIrCidScGNNZXNzYWdlVHlwZXNfUkVRVUVTVF9NT0RVTEVf",
+          "UkVTUE9OU0UQCBIpCiVScGNNZXNzYWdlVHlwZXNfUkVNT1RFX0VSUk9SX1JF",
+          "U1BPTlNFEAkSIAocUnBjTWVzc2FnZVR5cGVzX0RFU1RST1lfUE9SVBAKEiAK",
+          "HFJwY01lc3NhZ2VUeXBlc19TRVJWRVJfUkVBRFkQC2IGcHJvdG8z"));
     descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
         new pbr::FileDescriptor[] { },
         new pbr::GeneratedClrTypeInfo(new[] {typeof(global::RpcMessageTypes), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -62,7 +62,7 @@ public static partial class IndexReflection {
           new pbr::GeneratedClrTypeInfo(typeof(global::RequestModuleResponse), global::RequestModuleResponse.Parser, new[]{ "MessageIdentifier", "PortId", "Procedures" }, null, null, null, null),
           new pbr::GeneratedClrTypeInfo(typeof(global::DestroyPort), global::DestroyPort.Parser, new[]{ "MessageIdentifier", "PortId" }, null, null, null, null),
           new pbr::GeneratedClrTypeInfo(typeof(global::ModuleProcedure), global::ModuleProcedure.Parser, new[]{ "ProcedureId", "ProcedureName" }, null, null, null, null),
-          new pbr::GeneratedClrTypeInfo(typeof(global::Request), global::Request.Parser, new[]{ "MessageIdentifier", "PortId", "ProcedureId", "Payload" }, null, null, null, null),
+          new pbr::GeneratedClrTypeInfo(typeof(global::Request), global::Request.Parser, new[]{ "MessageIdentifier", "PortId", "ProcedureId", "ClientStream", "Payload" }, null, null, null, null),
           new pbr::GeneratedClrTypeInfo(typeof(global::RemoteError), global::RemoteError.Parser, new[]{ "MessageIdentifier", "ErrorCode", "ErrorMessage" }, null, null, null, null),
           new pbr::GeneratedClrTypeInfo(typeof(global::Response), global::Response.Parser, new[]{ "MessageIdentifier", "Payload" }, null, null, null, null),
           new pbr::GeneratedClrTypeInfo(typeof(global::StreamMessage), global::StreamMessage.Parser, new[]{ "MessageIdentifier", "PortId", "SequenceId", "Payload", "Closed", "Ack" }, null, null, null, null)
@@ -1735,6 +1735,7 @@ public sealed partial class Request : pb::IMessage<Request>
     messageIdentifier_ = other.messageIdentifier_;
     portId_ = other.portId_;
     procedureId_ = other.procedureId_;
+    clientStream_ = other.clientStream_;
     payload_ = other.payload_;
     _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
   }
@@ -1781,6 +1782,18 @@ public sealed partial class Request : pb::IMessage<Request>
     }
   }
 
+  /// <summary>Field number for the "client_stream" field.</summary>
+  public const int ClientStreamFieldNumber = 5;
+  private uint clientStream_;
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+  [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+  public uint ClientStream {
+    get { return clientStream_; }
+    set {
+      clientStream_ = value;
+    }
+  }
+
   /// <summary>Field number for the "payload" field.</summary>
   public const int PayloadFieldNumber = 6;
   private pb::ByteString payload_ = pb::ByteString.Empty;
@@ -1811,6 +1824,7 @@ public sealed partial class Request : pb::IMessage<Request>
     if (MessageIdentifier != other.MessageIdentifier) return false;
     if (PortId != other.PortId) return false;
     if (ProcedureId != other.ProcedureId) return false;
+    if (ClientStream != other.ClientStream) return false;
     if (Payload != other.Payload) return false;
     return Equals(_unknownFields, other._unknownFields);
   }
@@ -1822,6 +1836,7 @@ public sealed partial class Request : pb::IMessage<Request>
     if (MessageIdentifier != 0) hash ^= MessageIdentifier.GetHashCode();
     if (PortId != 0) hash ^= PortId.GetHashCode();
     if (ProcedureId != 0) hash ^= ProcedureId.GetHashCode();
+    if (ClientStream != 0) hash ^= ClientStream.GetHashCode();
     if (Payload.Length != 0) hash ^= Payload.GetHashCode();
     if (_unknownFields != null) {
       hash ^= _unknownFields.GetHashCode();
@@ -1853,6 +1868,10 @@ public sealed partial class Request : pb::IMessage<Request>
       output.WriteRawTag(37);
       output.WriteFixed32(ProcedureId);
     }
+    if (ClientStream != 0) {
+      output.WriteRawTag(45);
+      output.WriteFixed32(ClientStream);
+    }
     if (Payload.Length != 0) {
       output.WriteRawTag(50);
       output.WriteBytes(Payload);
@@ -1879,6 +1898,10 @@ public sealed partial class Request : pb::IMessage<Request>
       output.WriteRawTag(37);
       output.WriteFixed32(ProcedureId);
     }
+    if (ClientStream != 0) {
+      output.WriteRawTag(45);
+      output.WriteFixed32(ClientStream);
+    }
     if (Payload.Length != 0) {
       output.WriteRawTag(50);
       output.WriteBytes(Payload);
@@ -1900,6 +1923,9 @@ public sealed partial class Request : pb::IMessage<Request>
       size += 1 + 4;
     }
     if (ProcedureId != 0) {
+      size += 1 + 4;
+    }
+    if (ClientStream != 0) {
       size += 1 + 4;
     }
     if (Payload.Length != 0) {
@@ -1925,6 +1951,9 @@ public sealed partial class Request : pb::IMessage<Request>
     }
     if (other.ProcedureId != 0) {
       ProcedureId = other.ProcedureId;
+    }
+    if (other.ClientStream != 0) {
+      ClientStream = other.ClientStream;
     }
     if (other.Payload.Length != 0) {
       Payload = other.Payload;
@@ -1956,6 +1985,10 @@ public sealed partial class Request : pb::IMessage<Request>
           ProcedureId = input.ReadFixed32();
           break;
         }
+        case 45: {
+          ClientStream = input.ReadFixed32();
+          break;
+        }
         case 50: {
           Payload = input.ReadBytes();
           break;
@@ -1985,6 +2018,10 @@ public sealed partial class Request : pb::IMessage<Request>
         }
         case 37: {
           ProcedureId = input.ReadFixed32();
+          break;
+        }
+        case 45: {
+          ClientStream = input.ReadFixed32();
           break;
         }
         case 50: {

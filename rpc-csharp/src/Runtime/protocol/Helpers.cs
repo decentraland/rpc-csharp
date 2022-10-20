@@ -39,8 +39,8 @@ namespace rpc_csharp.protocol
             );
             reusableStreamMessage.PortId = portId;
             reusableStreamMessage.SequenceId = sequenceId;
-            reusableStreamMessage.Closed = true;
-            reusableStreamMessage.Ack = false;
+            reusableStreamMessage.Closed = false;
+            reusableStreamMessage.Ack = true;
 
             return reusableStreamMessage.ToByteArray();
         }
@@ -115,9 +115,11 @@ namespace rpc_csharp.protocol
                 {
                     if (token.IsCancellationRequested)
                         break;
-                    
+
                     if (current != null)
+                    {
                         await writer.YieldAsync(parseFunc(current)); // instead of `yield return`
+                    }
                 }
             });
         }

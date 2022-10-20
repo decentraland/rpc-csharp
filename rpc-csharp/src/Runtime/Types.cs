@@ -28,7 +28,7 @@ namespace rpc_csharp
         TContext context);
     
     public delegate UniTask<ByteString> ClientStreamCallback<in TContext>(IUniTaskAsyncEnumerable<ByteString> payload,
-        TContext context);
+        TContext context, CancellationToken ct);
     
     public delegate IUniTaskAsyncEnumerable<ByteString> BidirectionalStreamCallback<in TContext>(IUniTaskAsyncEnumerable<ByteString> payload,
         TContext context);

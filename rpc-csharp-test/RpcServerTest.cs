@@ -1,11 +1,8 @@
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Contexts;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using Google.Protobuf;
 using NUnit.Framework;
-using Proto;
 using rpc_csharp;
 using rpc_csharp.protocol;
 using rpc_csharp.transport;
@@ -56,7 +53,43 @@ namespace rpc_csharp_test
 
                         return new Book();
                     },
-                    (request, context) => QueryBooks(request, context));
+                    (request, context) => QueryBooks(request, context),
+                    async (streamRequest, bookContext, ct) =>
+                    {
+                        var selectedBook = new Book();
+                        await foreach (var request in streamRequest)
+                        {
+                            if (ct.IsCancellationRequested) break;
+
+                            foreach (var book in context.books)
+                            {
+                                if (request.Isbn == book.Isbn)
+                                {
+                                    selectedBook = book;
+                                }
+                            }
+                        }
+
+                        return selectedBook;
+                    },
+                    (streamRequest, bookContext) =>
+                    {
+                        return UniTaskAsyncEnumerable.Create<Book>(async (writer, token) =>
+                        {
+                            await foreach (var request in streamRequest)
+                            {
+                                if (token.IsCancellationRequested) break;
+
+                                foreach (var book in context.books)
+                                {
+                                    if (request.Isbn == book.Isbn)
+                                    {
+                                        await writer.YieldAsync(book); // instead of `yield return`
+                                    }
+                                }
+                            }
+                        });
+                    });
             });
         }
 

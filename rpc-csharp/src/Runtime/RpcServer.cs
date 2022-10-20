@@ -106,33 +106,38 @@ namespace rpc_csharp
                 if (unaryCallSuccess)
                 {
                     transport.SendMessage(ProtocolHelpers.CreateResponse(messageNumber, unaryCallResult));
-                }                
+                }
             }
             else if (procedureType == CallType.ClientStream)
             {
-                IUniTaskAsyncEnumerable<ByteString> clientStream =
-                    new StreamProtocol.StreamFromDispatcher(messageDispatcher, messageNumber, message.PortId);
+                var clientStream =
+                    new StreamProtocol.StreamFromDispatcher(messageDispatcher, message.ClientStream, message.PortId);
 
                 var result = await port.TryCallClientStreamProcedure(message.ProcedureId, clientStream, context);
                 transport.SendMessage(ProtocolHelpers.CreateResponse(messageNumber, result));
+
+                clientStream.CloseIfNotOpened();
+                await clientStream.GetAsyncEnumerator().DisposeAsync();
             }
             else if (procedureType == CallType.ServerStream)
             {
                 if (port.TryCallServerStreamProcedure(message.ProcedureId, message.Payload, context,
-                             out var streamResult))
+                        out var streamResult))
                 {
-                    await StreamProtocol.SendServerStream(messageDispatcher, transport, messageNumber, port.portId, streamResult);
+                    await StreamProtocol.SendServerStream(messageDispatcher, transport, messageNumber, port.portId,
+                        streamResult);
                 }
             }
             else if (procedureType == CallType.BidirectionalStream)
             {
                 IUniTaskAsyncEnumerable<ByteString> clientStream =
-                    new StreamProtocol.StreamFromDispatcher(messageDispatcher, messageNumber, message.PortId);
+                    new StreamProtocol.StreamFromDispatcher(messageDispatcher, message.ClientStream, message.PortId);
 
                 if (port.TryCallBidiStreamProcedure(message.ProcedureId, clientStream, context,
                         out var streamResult))
                 {
-                    await StreamProtocol.SendServerStream(messageDispatcher, transport, messageNumber, port.portId, streamResult);
+                    await StreamProtocol.SendServerStream(messageDispatcher, transport, messageNumber, port.portId,
+                        streamResult);
                 }
             }
             else
@@ -155,17 +160,21 @@ namespace rpc_csharp
                 switch (parsedMessage.messageType)
                 {
                     case RpcMessageTypes.CreatePort:
-                        HandleCreatePort((CreatePort) parsedMessage.message, parsedMessage.messageNumber, context, transport);
+                        HandleCreatePort((CreatePort) parsedMessage.message, parsedMessage.messageNumber, context,
+                            transport);
                         break;
                     case RpcMessageTypes.RequestModule:
-                        await HandleRequestModule((RequestModule) parsedMessage.message, parsedMessage.messageNumber, transport);
+                        await HandleRequestModule((RequestModule) parsedMessage.message, parsedMessage.messageNumber,
+                            transport);
                         break;
                     case RpcMessageTypes.Request:
-                        await HandleRequest((Request) parsedMessage.message, parsedMessage.messageNumber, context, transport, messageDispatcher);
+                        await HandleRequest((Request) parsedMessage.message, parsedMessage.messageNumber, context,
+                            transport, messageDispatcher);
                         break;
                     case RpcMessageTypes.StreamAck:
                     case RpcMessageTypes.StreamMessage:
-                        messageDispatcher.ReceiveAck((StreamMessage) parsedMessage.message, parsedMessage.messageNumber);
+                        messageDispatcher.ReceiveAck((StreamMessage) parsedMessage.message,
+                            parsedMessage.messageNumber);
                         break;
                     default:
                         Console.WriteLine("Not implemented message: " + parsedMessage.messageType);

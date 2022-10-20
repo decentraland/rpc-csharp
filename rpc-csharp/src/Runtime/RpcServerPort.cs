@@ -119,7 +119,7 @@ namespace rpc_csharp
         
         public async UniTask<ByteString> TryCallClientStreamProcedure(uint procedureId, IUniTaskAsyncEnumerable<ByteString> payload, TContext context)
         {
-            return clientStreamProcedures.TryGetValue(procedureId, out ClientStreamCallback<TContext> clientStreamProcedure) ? await clientStreamProcedure(payload, context) : null;
+            return clientStreamProcedures.TryGetValue(procedureId, out ClientStreamCallback<TContext> clientStreamProcedure) ? await clientStreamProcedure(payload, context, cancellationTokenSource.Token) : null;
         }
         
         public bool TryCallBidiStreamProcedure(uint procedureId, IUniTaskAsyncEnumerable<ByteString> payload, TContext context,

@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Cysharp.Threading.Tasks.Linq;
 using Google.Protobuf;
 using rpc_csharp.protocol;
 using rpc_csharp.transport;
@@ -139,12 +138,14 @@ namespace rpc_csharp
 
             private void OnProcessMessage(ParsedMessage parsedMessage)
             {
+                Console.WriteLine($"{parsedMessage.messageNumber} {parsedMessage.messageType}");
                 if (parsedMessage.messageNumber == messageNumber)
                 {
                     if (parsedMessage.messageType == RpcMessageTypes.StreamMessage)
                     {
                         if (parsedMessage.message is StreamMessage streamMessage)
                         {
+                            lastReceivedSequenceId = streamMessage.SequenceId;
                             if (streamMessage.Closed)
                             {
                                 channel.Close();
@@ -165,6 +166,14 @@ namespace rpc_csharp
                     {
                         channel.Close(new InvalidOperationException("RemoteError: Protocol error, unkown message"));
                     }
+                }
+            }
+
+            public void CloseIfNotOpened()
+            {
+                if (!wasOpen)
+                {
+                    channel.Close(new InvalidOperationException("ClientStream lost"));
                 }
             }
 

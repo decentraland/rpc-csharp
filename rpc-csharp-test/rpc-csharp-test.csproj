@@ -21,8 +21,8 @@
       <ProjectReference Include="..\rpc-csharp\rpc-csharp.csproj" />
     </ItemGroup>
 
-    <!--<Target Name="protogen" BeforeTargets="BeforeBuild">
+    <Target Name="protogen" BeforeTargets="BeforeBuild">
         <Exec WorkingDirectory="$(ProjectDir)codegen/" Command="./build.sh" />
-    </Target>-->
+    </Target>
     
 </Project>
