@@ -9,32 +9,32 @@ using Google.Protobuf;
 using rpc_csharp.protocol;
 using rpc_csharp;
 
-public abstract class BookService<Context>
+public abstract class IBookService<Context>
 {
   public const string ServiceName = "BookService";
 
-  public delegate UniTask<Book> GetBook(GetBookRequest request, Context context, CancellationToken ct);
+  protected abstract UniTask<Book> GetBook(GetBookRequest request, Context context, CancellationToken ct);
 
-  public delegate IUniTaskAsyncEnumerable<Book> QueryBooks(QueryBooksRequest request, Context context);
+  protected abstract IUniTaskAsyncEnumerable<Book> QueryBooks(QueryBooksRequest request, Context context);
 
-  public delegate UniTask<Book> GetBookStream(IUniTaskAsyncEnumerable<GetBookRequest> request, Context context, CancellationToken ct);
+  protected abstract UniTask<Book> GetBookStream(IUniTaskAsyncEnumerable<GetBookRequest> streamRequest, Context context, CancellationToken ct);
 
-  public delegate IUniTaskAsyncEnumerable<Book> QueryBooksStream(IUniTaskAsyncEnumerable<GetBookRequest> request, Context context);
+  protected abstract IUniTaskAsyncEnumerable<Book> QueryBooksStream(IUniTaskAsyncEnumerable<GetBookRequest> streamRequest, Context context);
 
-  public static void RegisterService(RpcServerPort<Context> port, GetBook getBook, QueryBooks queryBooks, GetBookStream getBookStream, QueryBooksStream queryBooksStream)
+  public static void RegisterService(RpcServerPort<Context> port, IBookService<Context> service)
   {
     var result = new ServerModuleDefinition<Context>();
       
-    result.definition.Add("GetBook", async (payload, context, ct) => { var res = await getBook(GetBookRequest.Parser.ParseFrom(payload), context, ct); return res?.ToByteString(); });
-    result.serverStreamDefinition.Add("QueryBooks", (payload, context) => { return ProtocolHelpers.SerializeMessageEnumerator<Book>(queryBooks(QueryBooksRequest.Parser.ParseFrom(payload), context)); });
-result.clientStreamDefinition.Add("GetBookStream", async (IUniTaskAsyncEnumerable<ByteString> payload, Context context, CancellationToken ct) => {
-  return (await getBookStream(
-    ProtocolHelpers.DeserializeMessageEnumerator<GetBookRequest>(payload, s => GetBookRequest.Parser.ParseFrom(s)), context, ct))?.ToByteString();
-});
-result.bidirectionalStreamDefinition.Add("QueryBooksStream", (IUniTaskAsyncEnumerable<ByteString> payload, Context context) => {
-  return ProtocolHelpers.SerializeMessageEnumerator<Book>(queryBooksStream(
-    ProtocolHelpers.DeserializeMessageEnumerator<GetBookRequest>(payload, s => GetBookRequest.Parser.ParseFrom(s)), context));
-});
+    result.definition.Add("GetBook", async (payload, context, ct) => { var res = await service.GetBook(GetBookRequest.Parser.ParseFrom(payload), context, ct); return res?.ToByteString(); });
+    result.serverStreamDefinition.Add("QueryBooks", (payload, context) => { return ProtocolHelpers.SerializeMessageEnumerator<Book>(service.QueryBooks(QueryBooksRequest.Parser.ParseFrom(payload), context)); });
+    result.clientStreamDefinition.Add("GetBookStream", async (IUniTaskAsyncEnumerable<ByteString> payload, Context context, CancellationToken ct) => {
+      return (await service.GetBookStream(
+        ProtocolHelpers.DeserializeMessageEnumerator<GetBookRequest>(payload, s => GetBookRequest.Parser.ParseFrom(s)), context, ct))?.ToByteString();
+    });
+    result.bidirectionalStreamDefinition.Add("QueryBooksStream", (IUniTaskAsyncEnumerable<ByteString> payload, Context context) => {
+      return ProtocolHelpers.SerializeMessageEnumerator<Book>(service.QueryBooksStream(
+        ProtocolHelpers.DeserializeMessageEnumerator<GetBookRequest>(payload, s => GetBookRequest.Parser.ParseFrom(s)), context));
+    });
 
     port.RegisterModule(ServiceName, (port) => UniTask.FromResult(result));
   }

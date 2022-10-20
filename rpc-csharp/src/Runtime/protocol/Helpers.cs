@@ -124,23 +124,28 @@ namespace rpc_csharp.protocol
             });
         }
 
-        public class AsyncQueue : IUniTaskAsyncEnumerator<ByteString>
+        public enum AsyncQueueActionType
+        {
+            Close,
+            Next
+        }
+        public class AsyncQueue<T> : IUniTaskAsyncEnumerator<T> where T : class
         {
             private readonly RequestingNext requestingNext;
             private bool closed = false;
             private bool closing = false;
-            private LinkedList<ByteString> values = new LinkedList<ByteString>();
-            private LinkedList<(Action<(ByteString, bool)>, Action<Exception>)> settlers = new LinkedList<(Action<(ByteString, bool)>, Action<Exception>)>();
+            private LinkedList<T> values = new LinkedList<T>();
+            private LinkedList<(Action<(T, bool)>, Action<Exception>)> settlers = new LinkedList<(Action<(T, bool)>, Action<Exception>)>();
             private Exception error = null;
-            private ByteString current;
-            public delegate void RequestingNext(AsyncQueue queue, string action);
+            private T current;
+            public delegate void RequestingNext(AsyncQueue<T> queue, AsyncQueueActionType action);
             
             public AsyncQueue(RequestingNext requestingNext)
             {
                 this.requestingNext = requestingNext;
             }
 
-            public void Enqueue(ByteString value)
+            public void Enqueue(T value)
             {
                 if (closed)
                 {
@@ -194,7 +199,7 @@ namespace rpc_csharp.protocol
 
                 // Wait for new values to be enqueued
                 var ret = new UniTaskCompletionSource<bool>();
-                var accept = new Action<(ByteString, bool)>(message =>
+                var accept = new Action<(T, bool)>(message =>
                 {
                     if (message.Item2)
                     {
@@ -203,7 +208,7 @@ namespace rpc_csharp.protocol
                     }
                     else
                     {
-                        current = ByteString.Empty;
+                        current = null;
                         ret.TrySetResult(false);
                     }
                 });
@@ -213,7 +218,7 @@ namespace rpc_csharp.protocol
                     ret.TrySetException(error);
                 });
 
-                requestingNext(this, "next");
+                requestingNext(this, AsyncQueueActionType.Next);
                 settlers.AddLast((accept, reject));
                 return ret.Task;
             }
@@ -244,11 +249,11 @@ namespace rpc_csharp.protocol
                 if (!closed)
                 {
                     closed = true;
-                    requestingNext(this, "close");
+                    requestingNext(this, AsyncQueueActionType.Close);
                 }
             }
 
-            public ByteString Current => current;
+            public T Current => current;
         }
         
         public class StreamEnumerator<T> : IUniTaskAsyncEnumerator<UniTask<ByteString>> where T : IMessage

@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks.Linq;
 using Google.Protobuf;
 using NUnit.Framework;
 using rpc_csharp;
+using rpc_csharp_demo.example;
 using rpc_csharp.protocol;
 using rpc_csharp.transport;
 
@@ -14,11 +15,6 @@ namespace rpc_csharp_test
         private ITransport client;
         private ITransport server;
         private BookContext context;
-
-        public class BookContext
-        {
-            public Book[] books;
-        }
 
         [SetUp]
         public void Setup()
@@ -40,70 +36,7 @@ namespace rpc_csharp_test
             rpcServer.AttachTransport(server, context);
             rpcServer.SetHandler((port, transport, testContext) =>
             {
-                BookService<BookContext>.RegisterService(port,
-                    async (request, context, ct) =>
-                    {
-                        foreach (var book in context.books)
-                        {
-                            if (request.Isbn == book.Isbn)
-                            {
-                                return book;
-                            }
-                        }
-
-                        return new Book();
-                    },
-                    (request, context) => QueryBooks(request, context),
-                    async (streamRequest, bookContext, ct) =>
-                    {
-                        var selectedBook = new Book();
-                        await foreach (var request in streamRequest)
-                        {
-                            if (ct.IsCancellationRequested) break;
-
-                            foreach (var book in context.books)
-                            {
-                                if (request.Isbn == book.Isbn)
-                                {
-                                    selectedBook = book;
-                                }
-                            }
-                        }
-
-                        return selectedBook;
-                    },
-                    (streamRequest, bookContext) =>
-                    {
-                        return UniTaskAsyncEnumerable.Create<Book>(async (writer, token) =>
-                        {
-                            await foreach (var request in streamRequest)
-                            {
-                                if (token.IsCancellationRequested) break;
-
-                                foreach (var book in context.books)
-                                {
-                                    if (request.Isbn == book.Isbn)
-                                    {
-                                        await writer.YieldAsync(book); // instead of `yield return`
-                                    }
-                                }
-                            }
-                        });
-                    });
-            });
-        }
-
-        IUniTaskAsyncEnumerable<Book> QueryBooks(QueryBooksRequest request, BookContext context)
-        {
-            return UniTaskAsyncEnumerable.Create<Book>(async (writer, token) =>
-            {
-                using (var iterator = context.books.AsEnumerable()!.GetEnumerator())
-                {
-                    while (iterator.MoveNext() && !token.IsCancellationRequested)
-                    {
-                        await writer.YieldAsync(iterator.Current); // instead of `yield return`
-                    }
-                }
+                BookServiceImpl.RegisterService(port, new BookServiceImpl());
             });
         }
 

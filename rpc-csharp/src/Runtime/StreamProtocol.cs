@@ -95,11 +95,11 @@ namespace rpc_csharp
             private bool wasOpen = false;
             private uint lastReceivedSequenceId = 0;
             private bool isRemoteClosed = false;
-            private ProtocolHelpers.AsyncQueue channel;
+            private ProtocolHelpers.AsyncQueue<ByteString> channel;
 
             public StreamFromDispatcher(MessageDispatcher dispatcher, uint messageNumber, uint portId)
             {
-                channel = new ProtocolHelpers.AsyncQueue(RequestingNext);
+                channel = new ProtocolHelpers.AsyncQueue<ByteString>(RequestingNext);
                 this.dispatcher = dispatcher;
                 this.messageNumber = messageNumber;
                 this.portId = portId;
@@ -117,17 +117,17 @@ namespace rpc_csharp
                 };
             }
 
-            private void RequestingNext(ProtocolHelpers.AsyncQueue queue, string action)
+            private void RequestingNext(ProtocolHelpers.AsyncQueue<ByteString> queue, ProtocolHelpers.AsyncQueueActionType action)
             {
-                if (action == "close") {
+                if (action == ProtocolHelpers.AsyncQueueActionType.Close) {
                     dispatcher.OnParsedMessage -= OnProcessMessage;
                 }
                 if (!isRemoteClosed) {
-                    if (action == "close")
+                    if (action == ProtocolHelpers.AsyncQueueActionType.Close)
                     {
                         dispatcher.transport.SendMessage(
                             ProtocolHelpers.CloseStreamMessage(messageNumber, lastReceivedSequenceId, portId));
-                    } else if (action == "next") {
+                    } else if (action == ProtocolHelpers.AsyncQueueActionType.Next) {
                         // mark the stream as opened
                         wasOpen = true;
                         dispatcher.transport.SendMessage(
@@ -138,7 +138,6 @@ namespace rpc_csharp
 
             private void OnProcessMessage(ParsedMessage parsedMessage)
             {
-                Console.WriteLine($"{parsedMessage.messageNumber} {parsedMessage.messageType}");
                 if (parsedMessage.messageNumber == messageNumber)
                 {
                     if (parsedMessage.messageType == RpcMessageTypes.StreamMessage)
