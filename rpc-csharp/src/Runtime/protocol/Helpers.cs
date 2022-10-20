@@ -128,6 +128,7 @@ namespace rpc_csharp.protocol
         {
             private readonly RequestingNext requestingNext;
             private bool closed = false;
+            private bool closing = false;
             private LinkedList<ByteString> values = new LinkedList<ByteString>();
             private LinkedList<(Action<(ByteString, bool)>, Action<Exception>)> settlers = new LinkedList<(Action<(ByteString, bool)>, Action<Exception>)>();
             private Exception error = null;
@@ -161,41 +162,57 @@ namespace rpc_csharp.protocol
             }
             public async UniTask DisposeAsync()
             {
-                Close();
+                if (!closing && !closed)
+                {
+                    Close();
+                }
             }
 
             public UniTask<bool> MoveNextAsync()
             {
+                closing = true;
                 if (values.Count > 0)
                 {
                     current = values.First.Value;
                     values.RemoveFirst();
                     return UniTask.FromResult(true);
                 }
+
                 if (error != null)
                 {
                     throw error;
                 }
-                if (closed) {
+
+                if (closed)
+                {
                     if (settlers.Count > 0)
                     {
                         throw new InvalidOperationException("Illegal internal state");
                     }
                     return UniTask.FromResult(false);
                 }
+
                 // Wait for new values to be enqueued
-                
                 var ret = new UniTaskCompletionSource<bool>();
                 var accept = new Action<(ByteString, bool)>(message =>
                 {
-                    current = message.Item1;
-                    ret.TrySetResult(message.Item2);
+                    if (message.Item2)
+                    {
+                        current = message.Item1;
+                        ret.TrySetResult(true);
+                    }
+                    else
+                    {
+                        current = ByteString.Empty;
+                        ret.TrySetResult(false);
+                    }
                 });
+
                 var reject = new Action<Exception>(error =>
                 {
                     ret.TrySetException(error);
                 });
-                //this.requestingNext(this, "next")
+
                 requestingNext(this, "next");
                 settlers.AddLast((accept, reject));
                 return ret.Task;
@@ -204,17 +221,19 @@ namespace rpc_csharp.protocol
             public void Close(Exception error = null) {
                 if (error != null)
                 {
-                    while (settlers.Count > 0)
+                    foreach (var settler in settlers)
                     {
-                        settlers.First.Value.Item2(error);
+                        settler.Item2(error);
                     }
+                    settlers.Clear();
                 }
                 else
                 {
-                    while (settlers.Count > 0)
+                    foreach (var settler in settlers)
                     {
-                        settlers.First.Value.Item1((null, false));
+                        settler.Item1((null, false));
                     }
+                    settlers.Clear();
                 }
 
                 if (error != null)

@@ -20,10 +20,11 @@ namespace rpc_csharp
             this.messageNumber = messageNumber;
         }
     }
+
     public class MessageDispatcher
     {
         public event Action<ParsedMessage> OnParsedMessage;
-        
+
         private readonly Dictionary<string, (Action<StreamMessage>, Action<Exception>)> oneTimeCallbacks =
             new Dictionary<string, (Action<StreamMessage>, Action<Exception>)>();
 
@@ -48,7 +49,6 @@ namespace rpc_csharp
                 if (parsedMessage != null)
                 {
                     var (messageType, message, messageNumber) = parsedMessage.Value;
-                    Console.WriteLine($"From Dispatcher: {messageNumber} {messageType}");
                     OnParsedMessage?.Invoke(new ParsedMessage(messageType, message, messageNumber));
                 }
             };
@@ -85,14 +85,8 @@ namespace rpc_csharp
 
             // C# Promiches
             var ret = new UniTaskCompletionSource<StreamMessage>();
-            var accept = new Action<StreamMessage>(message =>
-            {
-                ret.TrySetResult(message);
-            });
-            var reject = new Action<Exception>(error =>
-            {
-                ret.TrySetException(error);
-            });
+            var accept = new Action<StreamMessage>(message => { ret.TrySetResult(message); });
+            var reject = new Action<Exception>(error => { ret.TrySetException(error); });
             oneTimeCallbacks.Add(key, (accept, reject));
 
             transport.SendMessage(data.ToByteArray());
