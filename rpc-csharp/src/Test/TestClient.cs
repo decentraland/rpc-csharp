@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Google.Protobuf;
+using rpc_csharp;
 using rpc_csharp.protocol;
 using rpc_csharp.transport;
 
@@ -12,19 +13,23 @@ namespace rpc_csharp_test
     {
         public Dictionary<string, uint> prodecures { private set; get; }
         public ITransport transport { private set; get; }
+        
+        public MessageDispatcher messageDispatcher { private set; get; }
         public uint port { private set; get; }
 
-        private uint messageNumber = 2;
+        private uint messageNumber = 3; // request is messageNumber=3
 
         public static async UniTask<TestClient> Create(ITransport transport, string serviceName)
         {
             uint port = await CreatePort(transport);
             var procedures = await LoadModule(transport, port, serviceName);
+            var messageDispatcher = new MessageDispatcher(transport);
             return new TestClient
             {
                 transport = transport,
                 port = port,
-                prodecures = procedures
+                prodecures = procedures,
+                messageDispatcher = messageDispatcher
             };
         }
 
@@ -53,7 +58,7 @@ namespace rpc_csharp_test
             return (T) ret.Descriptor.Parser.ParseFrom(parsedResponse.Payload);
         }
 
-        public IUniTaskAsyncEnumerable<UniTask<T>> CallStream<T>(string procedureName, IMessage request)
+        public async UniTask<IUniTaskAsyncEnumerable<T>> CallServerStream<T>(string procedureName, IMessage payload)
             where T : IMessage, new()
         {
             if (!prodecures.TryGetValue(procedureName, out uint procedureId))
@@ -61,7 +66,103 @@ namespace rpc_csharp_test
                 throw (new Exception($"Procedure {procedureName} not found"));
             }
 
-            return new StreamEnumerable<T>(procedureId, request, transport, port, messageNumber);
+            var requestMessageNumber = messageNumber++;
+            
+            var request = new Request()
+            {
+                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                    RpcMessageTypes.Request,
+                    requestMessageNumber
+                ),
+                PortId = port,
+                ProcedureId = procedureId,
+                Payload = payload.ToByteString()
+            };
+            
+            var streamFromDispatcherFuture = StreamProtocol.HandleServerStream(messageDispatcher, requestMessageNumber, port);
+            
+            transport.SendMessage(request.ToByteArray());
+
+            return ProtocolHelpers.DeserializeMessageEnumerator(await streamFromDispatcherFuture, payload =>
+            {
+                var ret = new T();
+                return (T) ret.Descriptor.Parser.ParseFrom(payload);
+            });
+        }
+        
+        public async UniTask<T> CallClientStream<T>(string procedureName, IUniTaskAsyncEnumerable<IMessage> requestStream)
+            where T : IMessage, new()
+        {
+            if (!prodecures.TryGetValue(procedureName, out uint procedureId))
+            {
+                throw (new Exception($"Procedure {procedureName} not found"));
+            }
+
+            var clientStreamMessageNumber = messageNumber++;
+            var requestMessageNumber = messageNumber++;
+            
+            var request = new Request()
+            {
+                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                    RpcMessageTypes.Request,
+                    requestMessageNumber
+                ),
+                PortId = port,
+                ProcedureId = procedureId,
+                ClientStream = clientStreamMessageNumber,
+                Payload = ByteString.Empty
+            };
+            
+            var responseFuture = AwaitResponse(transport, null, RpcMessageTypes.Response);
+            
+            // No await! The stream is independent from the response
+            StreamProtocol.HandleClientStream(messageDispatcher, clientStreamMessageNumber, port,
+                ProtocolHelpers.SerializeMessageEnumerator<IMessage>(requestStream));
+            
+            transport.SendMessage(request.ToByteArray());
+
+            var response = await responseFuture;
+            var parsedResponse = Response.Parser.ParseFrom(response);
+            var ret = new T();
+            return (T) ret.Descriptor.Parser.ParseFrom(parsedResponse.Payload);
+        }
+        
+        public async UniTask<IUniTaskAsyncEnumerable<T>> CallBidirectionalStream<T>(string procedureName, IUniTaskAsyncEnumerable<IMessage> requestStream)
+            where T : IMessage, new()
+        {
+            if (!prodecures.TryGetValue(procedureName, out uint procedureId))
+            {
+                throw (new Exception($"Procedure {procedureName} not found"));
+            }
+
+            var clientStreamMessageNumber = messageNumber++;
+            var requestMessageNumber = messageNumber++;
+
+            var request = new Request()
+            {
+                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                    RpcMessageTypes.Request,
+                    requestMessageNumber
+                ),
+                PortId = port,
+                ProcedureId = procedureId,
+                ClientStream = clientStreamMessageNumber,
+                Payload = ByteString.Empty
+            };
+
+            var streamFromDispatcherFuture = StreamProtocol.HandleServerStream(messageDispatcher, requestMessageNumber, port);
+            
+            // No await! The stream is independent from the response
+            StreamProtocol.HandleClientStream(messageDispatcher, clientStreamMessageNumber, port,
+                ProtocolHelpers.SerializeMessageEnumerator<IMessage>(requestStream));
+            
+            transport.SendMessage(request.ToByteArray());
+
+            return ProtocolHelpers.DeserializeMessageEnumerator(await streamFromDispatcherFuture, payload =>
+            {
+                var ret = new T();
+                return (T) ret.Descriptor.Parser.ParseFrom(payload);
+            });
         }
 
         private static UniTask<byte[]> AwaitResponse<T>(ITransport transport, T request)
@@ -75,8 +176,8 @@ namespace rpc_csharp_test
             return AwaitResponse(transport, request, null);
         }
 
-        private static UniTask<byte[]> AwaitResponse(ITransport transport, byte[] request,
-            RpcMessageTypes? responseType)
+        private static UniTask<byte[]> AwaitResponse(ITransport transport, byte[]? request,
+            RpcMessageTypes? responseType, uint? messageNumber = null)
         {
             return UniTask.Create(() =>
             {
@@ -93,8 +194,8 @@ namespace rpc_csharp_test
                     {
                         var type = responseType.Value;
                         var header = RpcMessageHeader.Parser.ParseFrom(bytes);
-                        var (msgType, _) = ProtocolHelpers.ParseMessageIdentifier(header.MessageIdentifier);
-                        if (msgType == type)
+                        var (msgType, msgNumber) = ProtocolHelpers.ParseMessageIdentifier(header.MessageIdentifier);
+                        if (msgType == type && (messageNumber == null || messageNumber == msgNumber))
                         {
                             transport.OnMessageEvent -= OnMessage;
                             responseFuture.TrySetResult(bytes);
@@ -103,7 +204,8 @@ namespace rpc_csharp_test
                 }
 
                 transport.OnMessageEvent += OnMessage;
-                transport.SendMessage(request);
+                if (request != null)
+                    transport.SendMessage(request);
                 return responseFuture.Task;
             });
         }
@@ -114,7 +216,7 @@ namespace rpc_csharp_test
             {
                 MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
                     RpcMessageTypes.CreatePort,
-                    0
+                    1
                 ),
                 PortName = "testing-port"
             };
@@ -131,7 +233,7 @@ namespace rpc_csharp_test
             {
                 MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
                     RpcMessageTypes.RequestModule,
-                    1
+                    2
                 ),
                 ModuleName = serviceName,
                 PortId = port
@@ -154,46 +256,52 @@ namespace rpc_csharp_test
         {
         }
 
-        private class StreamEnumerable<T> : IUniTaskAsyncEnumerable<UniTask<T>> where T : IMessage, new()
+        public delegate void OnRequestSent();
+
+        private class StreamEnumerable<T> : IUniTaskAsyncEnumerable<T> where T : IMessage, new()
         {
             private readonly IMessage request;
             private readonly uint procedureId;
             private readonly ITransport transport;
             private readonly uint port;
             private readonly uint messageNumber;
+            private readonly OnRequestSent onRequestSent;
 
             public StreamEnumerable(uint procedureId, IMessage request, ITransport transport, uint port,
-                uint messageNumber)
+                uint messageNumber, OnRequestSent onRequestSent = null)
             {
                 this.request = request;
                 this.procedureId = procedureId;
                 this.transport = transport;
                 this.port = port;
                 this.messageNumber = messageNumber;
+                this.onRequestSent = onRequestSent;
             }
 
-            public IUniTaskAsyncEnumerator<UniTask<T>> GetAsyncEnumerator(
+            public IUniTaskAsyncEnumerator<T> GetAsyncEnumerator(
                 CancellationToken cancellationToken = new CancellationToken())
             {
-                return new StreamEnumerator<T>(procedureId, request, transport, port, messageNumber);
+                return new StreamEnumerator<T>(procedureId, request, transport, port, messageNumber, onRequestSent);
             }
         }
 
-        private class StreamEnumerator<T> : IUniTaskAsyncEnumerator<UniTask<T>> where T : IMessage, new()
+        private class StreamEnumerator<T> : IUniTaskAsyncEnumerator<T> where T : IMessage, new()
         {
             private readonly ITransport transport;
             private readonly uint messageNumber;
+            private OnRequestSent onRequestSent;
 
-            private UniTaskCompletionSource<T> elementFuture;
+            private T element;
 
             private byte[] currentRequest;
             private bool isDisposed = false;
 
             public StreamEnumerator(uint procedureId, IMessage request, ITransport transport, uint port,
-                uint messageNumber)
+                uint messageNumber, OnRequestSent onRequestSent = null)
             {
                 this.transport = transport;
                 this.messageNumber = messageNumber;
+                this.onRequestSent = onRequestSent;
 
                 currentRequest = new Request()
                 {
@@ -216,13 +324,14 @@ namespace rpc_csharp_test
             {
                 ByteString currentPayload = ByteString.Empty;
 
-                elementFuture = new UniTaskCompletionSource<T>();
-
                 return UniTask.Create(async () =>
                 {
                     while (currentPayload.IsEmpty)
                     {
-                        var bytes = await AwaitResponse(transport, currentRequest);
+                        var bytes = await AwaitResponse(transport, currentRequest, null, messageNumber);
+                        
+                        onRequestSent?.Invoke();
+                        onRequestSent = null;
 
                         if (isDisposed)
                         {
@@ -252,7 +361,7 @@ namespace rpc_csharp_test
                         {
                             var element = new T();
                             element = (T) element.Descriptor.Parser.ParseFrom(response.Payload);
-                            elementFuture.TrySetResult(element);
+                            this.element = element;
                             return true;
                         }
 
@@ -263,7 +372,7 @@ namespace rpc_csharp_test
                 });
             }
 
-            public UniTask<T> Current => elementFuture.Task;
+            public T Current => element;
         }
     }
 }

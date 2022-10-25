@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
 using Google.Protobuf;
 using rpc_csharp.protocol;
 using rpc_csharp.transport;
@@ -22,6 +24,19 @@ namespace rpc_csharp_test
                 SequenceId = sequenceId
             };
             client.SendMessage(request.ToByteArray());
+        }
+        
+        public static void InstrumentTransport(ITransport transport, string prefix)
+        {
+            transport.OnMessageEvent += data =>
+            {
+                var parsedMessage = ProtocolHelpers.ParseProtocolMessage(data);
+                if (parsedMessage.HasValue)
+                {
+                    var (messageType, message, messageNumber) = parsedMessage.Value;
+                    Debug.WriteLine(prefix + ": (" + messageType + ", " + messageNumber + ") " + message);
+                }
+            };
         }
     }
     public class TransportAsyncWrapper

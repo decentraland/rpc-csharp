@@ -9,29 +9,24 @@ namespace rpc_csharp
 {
     public class StreamProtocol
     {
-        private static StreamMessage reusedStreamMessage = new StreamMessage()
-        {
-            Closed = false,
-            Ack = false,
-            Payload = ByteString.Empty
-        };
-
-        private static async UniTask SendStreamThroughTransport(MessageDispatcher messageDispatcher, ITransport transport, uint messageNumber,
+        public static async UniTask SendStreamThroughTransport(MessageDispatcher messageDispatcher, ITransport transport, uint messageNumber,
             uint portId,
             IUniTaskAsyncEnumerable<ByteString> stream)
         {
             uint sequenceNumber = 0;
-
-            // reset stream message
-            reusedStreamMessage.MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
-                RpcMessageTypes.StreamMessage,
-                messageNumber
-            );
-            reusedStreamMessage.Closed = false;
-            reusedStreamMessage.Ack = false;
-            reusedStreamMessage.Payload = ByteString.Empty;
-            reusedStreamMessage.PortId = portId;
-            reusedStreamMessage.SequenceId = sequenceNumber;
+            
+            StreamMessage reusedStreamMessage = new StreamMessage()
+            {
+                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                    RpcMessageTypes.StreamMessage,
+                    messageNumber
+                ),
+                Closed = false,
+                Ack = false,
+                Payload = ByteString.Empty,
+                PortId = portId,
+                SequenceId = sequenceNumber
+            };
 
             // If this point is reached, then the client WANTS to consume an element of the
             // generator
@@ -63,15 +58,18 @@ namespace rpc_csharp
             uint sequenceNumber = 0;
 
             // reset stream message
-            reusedStreamMessage.MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
-                RpcMessageTypes.StreamMessage,
-                messageNumber
-            );
-            reusedStreamMessage.Closed = false;
-            reusedStreamMessage.Ack = false;
-            reusedStreamMessage.Payload = ByteString.Empty;
-            reusedStreamMessage.PortId = portId;
-            reusedStreamMessage.SequenceId = sequenceNumber;
+            var streamMessage = new StreamMessage()
+            {
+                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                    RpcMessageTypes.StreamMessage,
+                    messageNumber
+                ),
+                Closed = false,
+                Ack = false,
+                Payload = ByteString.Empty,
+                PortId = portId,
+                SequenceId = sequenceNumber
+            };
 
             // First, tell the client that we are opening a stream. Once the client sends
             // an ACK, we will know if they are ready to consume the first element.
@@ -79,12 +77,52 @@ namespace rpc_csharp
             // no stream.next() is called
             // The following lines are called "stream offer" in the tests.
             {
-                var ret = await messageDispatcher.SendStreamMessage(reusedStreamMessage);
+                var ret = await messageDispatcher.SendStreamMessage(streamMessage);
                 if (ret.Closed) return;
                 if (!ret.Ack) throw new Exception("Error in logic, ACK must be true");
             }
 
             await SendStreamThroughTransport(messageDispatcher, transport, messageNumber, portId, stream);
+        }
+
+        public static async UniTask<IUniTaskAsyncEnumerable<ByteString>> HandleServerStream(MessageDispatcher dispatcher, uint messageNumber, uint portId)
+        {
+            // Wait for open stream
+            UniTaskCompletionSource responseFuture = new UniTaskCompletionSource();
+
+            void OnParsedMessage(ParsedMessage parsedMessage)
+            {
+                if (parsedMessage.messageNumber == messageNumber)
+                {
+                    responseFuture.TrySetResult();
+                    dispatcher.OnParsedMessage -= OnParsedMessage;
+                }
+            }
+
+            dispatcher.OnParsedMessage += OnParsedMessage;
+            
+            await responseFuture.Task;
+            return new StreamFromDispatcher(dispatcher, messageNumber, portId);
+        }
+        
+        public static async UniTask HandleClientStream(MessageDispatcher dispatcher, uint messageNumber, uint portId, IUniTaskAsyncEnumerable<ByteString> requestStream)
+        {
+            // Wait for open stream
+            UniTaskCompletionSource responseFuture = new UniTaskCompletionSource();
+
+            void OnParsedMessage(ParsedMessage parsedMessage)
+            {
+                if (parsedMessage.messageNumber == messageNumber)
+                {
+                    responseFuture.TrySetResult();
+                    dispatcher.OnParsedMessage -= OnParsedMessage;
+                }
+            }
+
+            dispatcher.OnParsedMessage += OnParsedMessage;
+            
+            await responseFuture.Task;
+            await SendStreamThroughTransport(dispatcher, dispatcher.transport, messageNumber, portId, requestStream);
         }
         
         public class StreamFromDispatcher : IUniTaskAsyncEnumerable<ByteString>

@@ -23,6 +23,8 @@ namespace rpc_csharp
 
     public class MessageDispatcher
     {
+        public static int ID = 0;
+        public int _id = 0;
         public event Action<ParsedMessage> OnParsedMessage;
 
         private readonly Dictionary<string, (Action<StreamMessage>, Action<Exception>)> oneTimeCallbacks =
@@ -32,6 +34,7 @@ namespace rpc_csharp
 
         public MessageDispatcher(ITransport transport)
         {
+            _id = ++ID;
             this.transport = transport;
 
             transport.OnCloseEvent += () =>
@@ -50,6 +53,12 @@ namespace rpc_csharp
                 {
                     var (messageType, message, messageNumber) = parsedMessage.Value;
                     OnParsedMessage?.Invoke(new ParsedMessage(messageType, message, messageNumber));
+
+                    if (messageType == RpcMessageTypes.StreamAck || messageType == RpcMessageTypes.StreamMessage)
+                    {
+                        ReceiveAck((StreamMessage) message,
+                            messageNumber);
+                    }
                 }
             };
         }
@@ -68,7 +77,7 @@ namespace rpc_csharp
             oneTimeCallbacks.Clear();
         }
 
-        public void ReceiveAck(StreamMessage data, uint messageNumber)
+        private void ReceiveAck(StreamMessage data, uint messageNumber)
         {
             var key = $"{messageNumber},{data.SequenceId}";
             if (oneTimeCallbacks.TryGetValue(key, out var fut))

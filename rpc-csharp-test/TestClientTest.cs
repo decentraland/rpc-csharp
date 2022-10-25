@@ -18,6 +18,8 @@ namespace rpc_csharp_test
         public async UniTask Setup()
         {
             var (client, server) = MemoryTransport.Create();
+            TestUtils.InstrumentTransport(client, "message->client");
+            TestUtils.InstrumentTransport(server, "message->server");
 
             context = new BookContext()
             {
@@ -70,7 +72,7 @@ namespace rpc_csharp_test
         }
 
         [Test]
-        public async UniTask StreamCall()
+        public async UniTask ServerStreamCall()
         {
             List<Book> books = new List<Book>();
             var query = new QueryBooksRequest()
@@ -78,9 +80,9 @@ namespace rpc_csharp_test
                 AuthorPrefix = "mr"
             };
 
-            await foreach (var futureElement in testClient.CallStream<Book>("QueryBooks", query))
+            await foreach (var element in await testClient.CallServerStream<Book>("QueryBooks", query))
             {
-                var book = await futureElement;
+                var book = element;
                 books.Add(book);
             }
 
@@ -97,7 +99,7 @@ namespace rpc_csharp_test
         }
 
         [Test]
-        public async UniTask StreamCallWithNullElements()
+        public async UniTask ServerStreamCallWithNullElements()
         {
             context.books = new[]
             {
@@ -118,9 +120,9 @@ namespace rpc_csharp_test
                 AuthorPrefix = "mr"
             };
 
-            await foreach (var futureElement in testClient.CallStream<Book>("QueryBooks", query))
+            await foreach (var element in await testClient.CallServerStream<Book>("QueryBooks", query))
             {
-                var book = await futureElement;
+                var book = element;
                 books.Add(book);
             }
 
@@ -130,6 +132,59 @@ namespace rpc_csharp_test
             Assert.AreEqual(expectedBook.Author, returnedBook.Author);
             Assert.AreEqual(expectedBook.Isbn, returnedBook.Isbn);
             Assert.AreEqual(expectedBook.Title, returnedBook.Title);
+        }
+        
+        [Test]
+        public async UniTask ClientStreamCall()
+        {
+            var query = UniTaskAsyncEnumerable.Create<GetBookRequest>(async (writer, token) =>
+            {
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 1234});
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 1111});
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 7666});
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 7668});
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 7669});
+            });
+
+            var response = testClient.CallClientStream<Book>("GetBookStream", query);
+            
+            var expectedBook = context.books.Last();
+            var book = await response;
+            Assert.AreEqual(expectedBook.Author, book.Author);
+            Assert.AreEqual(expectedBook.Isbn, book.Isbn);
+            Assert.AreEqual(expectedBook.Title, book.Title);
+        }
+        
+        [Test]
+        public async UniTask BidirectionalStreamCall()
+        {
+            var query = UniTaskAsyncEnumerable.Create<GetBookRequest>(async (writer, token) =>
+            {
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 1234});
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 1111});
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 7666});
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 7668});
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 7669});
+            });
+
+            List<Book> books = new List<Book>();
+
+            await foreach (var element in await testClient.CallBidirectionalStream<Book>("QueryBooksStream", query))
+            {
+                var book = element;
+                books.Add(book);
+            }
+
+            Assert.AreEqual(context.books.Length, books.Count);
+
+            for (int i = 0; i < books.Count; i++)
+            {
+                var expectedBook = context.books[i];
+                var book = books[i];
+                Assert.AreEqual(expectedBook.Author, book.Author);
+                Assert.AreEqual(expectedBook.Isbn, book.Isbn);
+                Assert.AreEqual(expectedBook.Title, book.Title);
+            }
         }
     }
 }

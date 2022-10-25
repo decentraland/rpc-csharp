@@ -173,8 +173,7 @@ namespace rpc_csharp
                         break;
                     case RpcMessageTypes.StreamAck:
                     case RpcMessageTypes.StreamMessage:
-                        messageDispatcher.ReceiveAck((StreamMessage) parsedMessage.message,
-                            parsedMessage.messageNumber);
+                        // noop
                         break;
                     default:
                         Console.WriteLine("Not implemented message: " + parsedMessage.messageType);

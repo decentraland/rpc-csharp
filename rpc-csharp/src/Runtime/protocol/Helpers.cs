@@ -10,39 +10,38 @@ namespace rpc_csharp.protocol
 {
     public static class ProtocolHelpers
     {
-        private static readonly StreamMessage reusableStreamMessage = new StreamMessage()
-        {
-            Closed = true,
-            Ack = false,
-            Payload = ByteString.Empty,
-        };
-
         public static byte[] CloseStreamMessage(uint messageNumber, uint sequenceId, uint portId)
         {
-            reusableStreamMessage.MessageIdentifier = CalculateMessageIdentifier(
-                RpcMessageTypes.StreamMessage,
-                messageNumber
-            );
-            reusableStreamMessage.PortId = portId;
-            reusableStreamMessage.SequenceId = sequenceId;
-            reusableStreamMessage.Closed = true;
-            reusableStreamMessage.Ack = false;
+            var streamMessage = new StreamMessage()
+            {
+                MessageIdentifier = CalculateMessageIdentifier(
+                    RpcMessageTypes.StreamMessage,
+                    messageNumber
+                ),
+                PortId = portId,
+                SequenceId = sequenceId,
+                Closed = true,
+                Ack = false
+            };
 
-            return reusableStreamMessage.ToByteArray();
+            return streamMessage.ToByteArray();
         }
         
         public static byte[] StreamAckMessage(uint messageNumber, uint sequenceId, uint portId)
         {
-            reusableStreamMessage.MessageIdentifier = CalculateMessageIdentifier(
-                RpcMessageTypes.StreamMessage,
-                messageNumber
-            );
-            reusableStreamMessage.PortId = portId;
-            reusableStreamMessage.SequenceId = sequenceId;
-            reusableStreamMessage.Closed = false;
-            reusableStreamMessage.Ack = true;
+            var streamMessage = new StreamMessage()
+            {
+                MessageIdentifier = CalculateMessageIdentifier(
+                    RpcMessageTypes.StreamAck,
+                    messageNumber
+                ),
+                PortId = portId,
+                SequenceId = sequenceId,
+                Closed = false,
+                Ack = true
+            };
 
-            return reusableStreamMessage.ToByteArray();
+            return streamMessage.ToByteArray();
         }
 
         // @internal
@@ -160,8 +159,7 @@ namespace rpc_csharp.protocol
                     var settler = settlers.First.Value;
                     settlers.RemoveFirst();
                     settler.Item1((value, true));
-                } else
-                {
+                } else {
                     values.AddLast(value);
                 }
             }
@@ -218,8 +216,8 @@ namespace rpc_csharp.protocol
                     ret.TrySetException(error);
                 });
 
-                requestingNext(this, AsyncQueueActionType.Next);
                 settlers.AddLast((accept, reject));
+                requestingNext(this, AsyncQueueActionType.Next);
                 return ret.Task;
             }
             
