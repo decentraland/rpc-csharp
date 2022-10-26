@@ -7,11 +7,11 @@ using rpc_csharp.transport;
 
 namespace rpc_csharp
 {
-    public struct ParsedMessage
+    public readonly struct ParsedMessage
     {
-        public RpcMessageTypes messageType;
-        public object message;
-        public uint messageNumber;
+        public readonly RpcMessageTypes messageType;
+        public readonly object message;
+        public readonly uint messageNumber;
 
         public ParsedMessage(RpcMessageTypes messageType, object message, uint messageNumber)
         {
