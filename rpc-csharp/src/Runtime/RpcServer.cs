@@ -20,13 +20,6 @@ namespace rpc_csharp
 
         private readonly CancellationTokenSource cancellationTokenSource;
 
-        private static StreamMessage reusedStreamMessage = new StreamMessage()
-        {
-            Closed = false,
-            Ack = false,
-            Payload = ByteString.Empty
-        };
-
         public RpcServer()
         {
             cancellationTokenSource = new CancellationTokenSource();
@@ -96,91 +89,56 @@ namespace rpc_csharp
             transport.SendMessage(response.ToByteArray());
         }
 
-        private static async UniTask SendStream(AckHelper ackHelper, ITransport transport, uint messageNumber,
-            uint portId,
-            IUniTaskAsyncEnumerator<UniTask<ByteString>> stream)
-        {
-            uint sequenceNumber = 0;
-
-            // reset stream message
-            reusedStreamMessage.MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
-                RpcMessageTypes.StreamMessage,
-                messageNumber
-            );
-            reusedStreamMessage.Closed = false;
-            reusedStreamMessage.Ack = false;
-            reusedStreamMessage.Payload = ByteString.Empty;
-            reusedStreamMessage.PortId = portId;
-            reusedStreamMessage.SequenceId = sequenceNumber;
-
-            // First, tell the client that we are opening a stream. Once the client sends
-            // an ACK, we will know if they are ready to consume the first element.
-            // If the response is instead close=true, then this function returns and
-            // no stream.next() is called
-            // The following lines are called "stream offer" in the tests.
-            {
-                var ret = await ackHelper.SendWithAck(reusedStreamMessage);
-                if (ret.Closed) return;
-                if (!ret.Ack) throw new Exception("Error in logic, ACK must be true");
-            }
-
-            // If this point is reached, then the client WANTS to consume an element of the
-            // generator
-
-            var iterator = stream;
-            {
-                while (await iterator.MoveNextAsync())
-                {
-                    var elem = await iterator.Current;
-                    sequenceNumber++;
-                    reusedStreamMessage.SequenceId = sequenceNumber;
-                    reusedStreamMessage.Payload = elem;
-
-                    var ret = await ackHelper.SendWithAck(reusedStreamMessage);
-                    if (ret.Ack)
-                    {
-                        continue;
-                    }
-                    else if (ret.Closed)
-                    {
-                        break;
-                    }
-                }
-
-                await iterator.DisposeAsync();
-            }
-
-            transport.SendMessage(ProtocolHelpers.CloseStreamMessage(messageNumber, sequenceNumber, portId));
-        }
-
         private async UniTask HandleRequest(Request message, uint messageNumber, TContext context,
-            ITransport transport, AckHelper ackHelper)
+            ITransport transport, MessageDispatcher messageDispatcher)
         {
             if (!ports.TryGetValue(message.PortId, out var port))
             {
                 throw new InvalidOperationException($"Cannot find port {message.PortId}");
             }
 
-            var (unaryCallSuccess, unaryCallResult) =
-                await port.TryCallUnaryProcedure(message.ProcedureId, message.Payload, context);
-
-            if (unaryCallSuccess)
+            CallType procedureType = port.GetProcedureType(message.ProcedureId);
+            if (procedureType == CallType.Unary)
             {
-                var response = new Response
+                var (unaryCallSuccess, unaryCallResult) =
+                    await port.TryCallUnaryProcedure(message.ProcedureId, message.Payload, context);
+
+                if (unaryCallSuccess)
                 {
-                    MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
-                        RpcMessageTypes.Response,
-                        messageNumber
-                    ),
-                    Payload = unaryCallResult ?? ByteString.Empty
-                };
-
-                transport.SendMessage(response.ToByteArray());
+                    transport.SendMessage(ProtocolHelpers.CreateResponse(messageNumber, unaryCallResult));
+                }
             }
-            else if (port.TryCallStreamProcedure(message.ProcedureId, message.Payload, context,
-                out IUniTaskAsyncEnumerator<UniTask<ByteString>> streamResult))
+            else if (procedureType == CallType.ClientStream)
             {
-                await SendStream(ackHelper, transport, messageNumber, port.portId, streamResult);
+                var clientStream =
+                    new StreamProtocol.StreamFromDispatcher(messageDispatcher, message.ClientStream, message.PortId);
+
+                var result = await port.TryCallClientStreamProcedure(message.ProcedureId, clientStream, context);
+                transport.SendMessage(ProtocolHelpers.CreateResponse(messageNumber, result));
+
+                clientStream.CloseIfNotOpened();
+                await clientStream.GetAsyncEnumerator().DisposeAsync();
+            }
+            else if (procedureType == CallType.ServerStream)
+            {
+                if (port.TryCallServerStreamProcedure(message.ProcedureId, message.Payload, context,
+                        out var streamResult))
+                {
+                    await StreamProtocol.SendServerStream(messageDispatcher, transport, messageNumber, port.portId,
+                        streamResult);
+                }
+            }
+            else if (procedureType == CallType.BidirectionalStream)
+            {
+                IUniTaskAsyncEnumerable<ByteString> clientStream =
+                    new StreamProtocol.StreamFromDispatcher(messageDispatcher, message.ClientStream, message.PortId);
+
+                if (port.TryCallBidiStreamProcedure(message.ProcedureId, clientStream, context,
+                        out var streamResult))
+                {
+                    await StreamProtocol.SendServerStream(messageDispatcher, transport, messageNumber, port.portId,
+                        streamResult);
+                }
             }
             else
             {
@@ -195,34 +153,31 @@ namespace rpc_csharp
 
         public void AttachTransport(ITransport transport, TContext context)
         {
-            var ackHelper = new AckHelper(transport);
+            var messageDispatcher = new MessageDispatcher(transport);
 
-            transport.OnMessageEvent += async (byte[] data) =>
+            messageDispatcher.OnParsedMessage += async (ParsedMessage parsedMessage) =>
             {
-                var parsedMessage = ProtocolHelpers.ParseProtocolMessage(data);
-
-                if (parsedMessage != null)
+                switch (parsedMessage.messageType)
                 {
-                    var (messageType, message, messageNumber) = parsedMessage.Value;
-                    switch (messageType)
-                    {
-                        case RpcMessageTypes.CreatePort:
-                            HandleCreatePort((CreatePort) message, messageNumber, context, transport);
-                            break;
-                        case RpcMessageTypes.RequestModule:
-                            await HandleRequestModule((RequestModule) message, messageNumber, transport);
-                            break;
-                        case RpcMessageTypes.Request:
-                            await HandleRequest((Request) message, messageNumber, context, transport, ackHelper);
-                            break;
-                        case RpcMessageTypes.StreamAck:
-                        case RpcMessageTypes.StreamMessage:
-                            ackHelper.ReceiveAck((StreamMessage) message, messageNumber);
-                            break;
-                        default:
-                            Console.WriteLine("Not implemented message: " + messageType);
-                            break;
-                    }
+                    case RpcMessageTypes.CreatePort:
+                        HandleCreatePort((CreatePort) parsedMessage.message, parsedMessage.messageNumber, context,
+                            transport);
+                        break;
+                    case RpcMessageTypes.RequestModule:
+                        await HandleRequestModule((RequestModule) parsedMessage.message, parsedMessage.messageNumber,
+                            transport);
+                        break;
+                    case RpcMessageTypes.Request:
+                        await HandleRequest((Request) parsedMessage.message, parsedMessage.messageNumber, context,
+                            transport, messageDispatcher);
+                        break;
+                    case RpcMessageTypes.StreamAck:
+                    case RpcMessageTypes.StreamMessage:
+                        // noop
+                        break;
+                    default:
+                        Console.WriteLine("Not implemented message: " + parsedMessage.messageType);
+                        break;
                 }
             };
         }

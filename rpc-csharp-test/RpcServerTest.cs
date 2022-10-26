@@ -1,11 +1,10 @@
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Contexts;
 using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
 using Google.Protobuf;
 using NUnit.Framework;
-using Proto;
 using rpc_csharp;
+using rpc_csharp_demo.example;
 using rpc_csharp.protocol;
 using rpc_csharp.transport;
 
@@ -16,11 +15,6 @@ namespace rpc_csharp_test
         private ITransport client;
         private ITransport server;
         private BookContext context;
-
-        internal class BookContext
-        {
-            public Book[] books;
-        }
 
         [SetUp]
         public void Setup()
@@ -42,32 +36,8 @@ namespace rpc_csharp_test
             rpcServer.AttachTransport(server, context);
             rpcServer.SetHandler((port, transport, testContext) =>
             {
-                BookService<BookContext>.RegisterService(port,
-                    async (request, context, ct) =>
-                    {
-                        foreach (var book in context.books)
-                        {
-                            if (request.Isbn == book.Isbn)
-                            {
-                                return book;
-                            }
-                        }
-
-                        return new Book();
-                    },
-                    (request, context) => QueryBooks(request, context));
+                BookServiceImpl.RegisterService(port, new BookServiceImpl());
             });
-        }
-
-        IEnumerator<Book> QueryBooks(QueryBooksRequest request, BookContext context)
-        {
-            using (var iterator = context.books.AsEnumerable()!.GetEnumerator())
-            {
-                while (iterator.MoveNext())
-                {
-                    yield return iterator.Current;
-                }
-            }
         }
 
         private void CreatePort(TransportAsyncWrapper clientWrapper)
@@ -130,6 +100,16 @@ namespace rpc_csharp_test
                     {
                         ProcedureId = 1,
                         ProcedureName = "QueryBooks",
+                    },
+                    new ModuleProcedure()
+                    {
+                        ProcedureId = 2,
+                        ProcedureName = "GetBookStream",
+                    },
+                    new ModuleProcedure()
+                    {
+                        ProcedureId = 3,
+                        ProcedureName = "QueryBooksStream",
                     }
                 }
             };

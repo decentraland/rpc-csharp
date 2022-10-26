@@ -117,6 +117,70 @@ export declare const BookServiceDefinition: {
             readonly responseStream: true;
             readonly options: {};
         };
+        readonly getBookStream: {
+            readonly name: "GetBookStream";
+            readonly requestType: {
+                encode(message: GetBookRequest, writer?: _m0.Writer): _m0.Writer;
+                decode(input: _m0.Reader | Uint8Array, length?: number): GetBookRequest;
+                fromJSON(object: any): GetBookRequest;
+                toJSON(message: GetBookRequest): unknown;
+                fromPartial<I extends {
+                    isbn?: number;
+                } & {
+                    isbn?: number;
+                } & Record<Exclude<keyof I, "isbn">, never>>(object: I): GetBookRequest;
+            };
+            readonly requestStream: true;
+            readonly responseType: {
+                encode(message: Book, writer?: _m0.Writer): _m0.Writer;
+                decode(input: _m0.Reader | Uint8Array, length?: number): Book;
+                fromJSON(object: any): Book;
+                toJSON(message: Book): unknown;
+                fromPartial<I_1 extends {
+                    isbn?: number;
+                    title?: string;
+                    author?: string;
+                } & {
+                    isbn?: number;
+                    title?: string;
+                    author?: string;
+                } & Record<Exclude<keyof I_1, keyof Book>, never>>(object: I_1): Book;
+            };
+            readonly responseStream: false;
+            readonly options: {};
+        };
+        readonly queryBooksStream: {
+            readonly name: "QueryBooksStream";
+            readonly requestType: {
+                encode(message: GetBookRequest, writer?: _m0.Writer): _m0.Writer;
+                decode(input: _m0.Reader | Uint8Array, length?: number): GetBookRequest;
+                fromJSON(object: any): GetBookRequest;
+                toJSON(message: GetBookRequest): unknown;
+                fromPartial<I extends {
+                    isbn?: number;
+                } & {
+                    isbn?: number;
+                } & Record<Exclude<keyof I, "isbn">, never>>(object: I): GetBookRequest;
+            };
+            readonly requestStream: true;
+            readonly responseType: {
+                encode(message: Book, writer?: _m0.Writer): _m0.Writer;
+                decode(input: _m0.Reader | Uint8Array, length?: number): Book;
+                fromJSON(object: any): Book;
+                toJSON(message: Book): unknown;
+                fromPartial<I_1 extends {
+                    isbn?: number;
+                    title?: string;
+                    author?: string;
+                } & {
+                    isbn?: number;
+                    title?: string;
+                    author?: string;
+                } & Record<Exclude<keyof I_1, keyof Book>, never>>(object: I_1): Book;
+            };
+            readonly responseStream: true;
+            readonly options: {};
+        };
     };
 };
 declare type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;

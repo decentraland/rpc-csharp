@@ -1,4 +1,7 @@
-﻿using rpc_csharp_demo.example;
+﻿using System;
+using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
+using rpc_csharp_demo.example;
 
 namespace rpc_csharp_demo
 {
@@ -7,7 +10,7 @@ namespace rpc_csharp_demo
         public static void Main(string[] args)
         {
             ServerExample.Run();
-            NodeClientExample.Run("rpc-test-client-js");
+            //NodeClientExample.Run("rpc-test-client-js");
         }
     }
 }

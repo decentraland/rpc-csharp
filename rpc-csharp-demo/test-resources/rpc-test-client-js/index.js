@@ -34616,6 +34616,22 @@ exports.BookServiceDefinition = {
             responseStream: true,
             options: {},
         },
+        getBookStream: {
+            name: "GetBookStream",
+            requestType: exports.GetBookRequest,
+            requestStream: true,
+            responseType: exports.Book,
+            responseStream: false,
+            options: {},
+        },
+        queryBooksStream: {
+            name: "QueryBooksStream",
+            requestType: exports.GetBookRequest,
+            requestStream: true,
+            responseType: exports.Book,
+            responseStream: true,
+            options: {},
+        },
     },
 };
 var globalThis = (() => {
@@ -34668,6 +34684,11 @@ const server_1 = __nccwpck_require__(6660); // Just to check equality
 // remote APIs
 const createBookServiceClient = (clientPort) => (0, codegen_1.loadService)(clientPort, api_1.BookServiceDefinition);
 exports.createBookServiceClient = createBookServiceClient;
+async function* isbnGenerator() {
+    for (const book of server_1.context.hardcodedDatabase) {
+        yield api_1.GetBookRequest.fromPartial({ isbn: book.isbn });
+    }
+}
 const runClient = () => {
     const ws = new ws_1.default("ws://127.0.0.1:8080/");
     const clientSocket = (0, WebSocket_1.WebSocketTransport)(ws);
@@ -34686,21 +34707,39 @@ const runClient = () => {
         const clientBookService = (0, exports.createBookServiceClient)(clientPort);
         // 8th step: profit
         console.log("> Invoking BookService.getBook(isbn:19997)");
-        const response = await clientBookService.getBook({ isbn: 19997 });
-        console.log("  Responsev2: ", response);
-        (0, expect_1.default)(response).toEqual({
-            author: "menduz",
-            isbn: 19997,
-            title: "Rpc onion layers",
-        });
-        console.log("  InitQueryBook");
-        const list = [];
-        for await (const book of clientBookService.queryBooks({ authorPrefix: "mr" })) {
-            list.push(book);
-            console.log("  StreamResponse: ", book);
+        {
+            const response = await clientBookService.getBook({ isbn: 19997 });
+            console.log("  Response: ", response);
+            (0, expect_1.default)(response).toEqual({
+                author: "menduz",
+                isbn: 19997,
+                title: "Rpc onion layers",
+            });
         }
-        console.log("  List: ", list);
-        (0, expect_1.default)(list).toEqual(server_1.context.hardcodedDatabase);
+        console.log("> ServerStream");
+        {
+            const list = [];
+            for await (const book of clientBookService.queryBooks({ authorPrefix: "mr" })) {
+                list.push(book);
+                console.log("  StreamResponse: ", book);
+            }
+            console.log("  List: ", list);
+            (0, expect_1.default)(list).toEqual(server_1.context.hardcodedDatabase);
+        }
+        console.log("> ClientStream");
+        {
+            const response = await clientBookService.getBookStream(isbnGenerator());
+            console.log("  Response: ", response);
+        }
+        console.log("> BidirectionalStream");
+        {
+            const list = [];
+            for await (const book of clientBookService.queryBooksStream(isbnGenerator())) {
+                list.push(book);
+                console.log("  StreamResponse: ", book);
+            }
+            console.log("  List: ", list);
+        }
         clientSocket.close();
     }
     handleClientCreation().catch((err) => {
@@ -34714,70 +34753,42 @@ exports.runClient = runClient;
 /***/ }),
 
 /***/ 6660:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+/***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.runServer = exports.context = exports.registerBookServiceServerImplementation = void 0;
-const codegen = __importStar(__nccwpck_require__(8152));
-const rpc_1 = __nccwpck_require__(7333);
-const expect_1 = __importDefault(__nccwpck_require__(7647));
-const api_1 = __nccwpck_require__(8229);
-const WebSocket_1 = __nccwpck_require__(1646);
-const ws_1 = __nccwpck_require__(8867);
+exports.context = void 0;
 // This file creates the server implementation of BookService defined in api.proto
 const FAIL_WITH_EXCEPTION_ISBN = 1;
 // This function registers the BookService into the given RpcServerPort
-function registerBookServiceServerImplementation(port) {
-    codegen.registerService(port, api_1.BookServiceDefinition, async () => ({
-        async getBook(req, context) {
-            if (req.isbn == FAIL_WITH_EXCEPTION_ISBN)
-                throw new Error("ErrorMessage");
-            // assert context is OK
-            (0, expect_1.default)(context.hardcodedDatabase).toHaveLength(4);
-            return {
-                author: "menduz",
-                isbn: req.isbn,
-                title: "Rpc onion layers",
-            };
-        },
-        async *queryBooks(req, context) {
-            if (req.authorPrefix == "fail_before_yield")
-                throw new Error("fail_before_yield");
-            for (const book of context.hardcodedDatabase) {
-                if (book.author.includes(req.authorPrefix)) {
-                    yield book;
-                }
-            }
-            if (req.authorPrefix == "fail_before_end")
-                throw new Error("fail_before_end");
-        },
-    }));
-}
-exports.registerBookServiceServerImplementation = registerBookServiceServerImplementation;
+/*export function registerBookServiceServerImplementation(port: RpcServerPort<TestContext>) {
+  codegen.registerService(port, BookServiceDefinition, async () => ({
+    async getBook(req: GetBookRequest, context) {
+      if (req.isbn == FAIL_WITH_EXCEPTION_ISBN) throw new Error("ErrorMessage")
+
+      // assert context is OK
+      expect(context.hardcodedDatabase).toHaveLength(4)
+
+      return {
+        author: "menduz",
+        isbn: req.isbn,
+        title: "Rpc onion layers",
+      }
+    },
+    async *queryBooks(req: QueryBooksRequest, context) {
+      if (req.authorPrefix == "fail_before_yield") throw new Error("fail_before_yield")
+
+      for (const book of context.hardcodedDatabase) {
+        if (book.author.includes(req.authorPrefix)) {
+          yield book
+        }
+      }
+
+      if (req.authorPrefix == "fail_before_end") throw new Error("fail_before_end")
+    },
+  }))
+}*/
 // this emulates a server context with components
 exports.context = {
     hardcodedDatabase: [
@@ -34785,28 +34796,32 @@ exports.context = {
         { author: "mr cazala", isbn: 1111, title: "Advanced CSS" },
         { author: "mr mannakia", isbn: 7666, title: "Advanced binary packing" },
         { author: "mr kuruk", isbn: 7668, title: "Advanced bots AI" },
+        { author: "mr pato", isbn: 777, title: "Buy him a thermo" },
     ],
 };
-const runServer = () => {
-    console.log("> Creating server");
-    const rpcServer = (0, rpc_1.createRpcServer)({});
-    // the handler function will be called every time a port is created.
-    // it should register the available APIs/Modules for the specified port
-    rpcServer.setHandler(async function handler(port) {
-        console.log("  Creating server port: " + port.portName);
-        registerBookServiceServerImplementation(port);
-    });
-    console.log("> Creating client and server MemoryTransport");
-    const wss = new ws_1.WebSocketServer({ port: 8080 });
-    wss.on('connection', function connection(ws, req) {
-        const serverSocket = (0, WebSocket_1.WebSocketTransport)(ws);
-        // connect the "socket" to the server
-        console.log("> Attaching transport");
-        rpcServer.attachTransport(serverSocket, exports.context);
-        wss.close();
-    });
-};
-exports.runServer = runServer;
+/*export const runServer = () => {
+
+  console.log("> Creating server")
+  const rpcServer = createRpcServer<TestContext>({})
+  // the handler function will be called every time a port is created.
+  // it should register the available APIs/Modules for the specified port
+  rpcServer.setHandler(async function handler(port) {
+    console.log("  Creating server port: " + port.portName)
+    registerBookServiceServerImplementation(port)
+  })
+
+  console.log("> Creating client and server MemoryTransport")
+  const wss = new WebSocketServer({ port: 8080 })
+  wss.on('connection', function connection(ws: any, req: any) {
+    const serverSocket = WebSocketTransport(ws)
+
+    // connect the "socket" to the server
+    console.log("> Attaching transport")
+    rpcServer.attachTransport(serverSocket, context)
+
+    wss.close()
+  })
+}*/ 
 
 
 /***/ }),

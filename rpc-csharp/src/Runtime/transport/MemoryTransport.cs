@@ -1,4 +1,6 @@
 using System;
+using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 namespace rpc_csharp.transport
 {
@@ -37,7 +39,12 @@ namespace rpc_csharp.transport
         }
         public void SendMessage(byte[] data)
         {
-            sender.GetOnMessageEvent().Invoke(data);
+            // Decouple
+            UniTask.Create(() =>
+            {
+                sender.GetOnMessageEvent().Invoke(data);
+                return UniTask.CompletedTask;
+            });
         }
 
         public void Close()

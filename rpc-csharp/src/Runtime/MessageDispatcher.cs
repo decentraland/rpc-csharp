@@ -7,15 +7,34 @@ using rpc_csharp.transport;
 
 namespace rpc_csharp
 {
-    public class AckHelper
+    public readonly struct ParsedMessage
     {
+        public readonly RpcMessageTypes messageType;
+        public readonly object message;
+        public readonly uint messageNumber;
+
+        public ParsedMessage(RpcMessageTypes messageType, object message, uint messageNumber)
+        {
+            this.messageType = messageType;
+            this.message = message;
+            this.messageNumber = messageNumber;
+        }
+    }
+
+    public class MessageDispatcher
+    {
+        public static int ID = 0;
+        public int _id = 0;
+        public event Action<ParsedMessage> OnParsedMessage;
+
         private readonly Dictionary<string, (Action<StreamMessage>, Action<Exception>)> oneTimeCallbacks =
             new Dictionary<string, (Action<StreamMessage>, Action<Exception>)>();
 
-        private readonly ITransport transport;
+        public readonly ITransport transport;
 
-        public AckHelper(ITransport transport)
+        public MessageDispatcher(ITransport transport)
         {
+            _id = ++ID;
             this.transport = transport;
 
             transport.OnCloseEvent += () =>
@@ -25,6 +44,23 @@ namespace rpc_csharp
             };
 
             transport.OnErrorEvent += (err) => { CloseAll(new Exception(err)); };
+
+            transport.OnMessageEvent += data =>
+            {
+                var parsedMessage = ProtocolHelpers.ParseProtocolMessage(data);
+
+                if (parsedMessage != null)
+                {
+                    var (messageType, message, messageNumber) = parsedMessage.Value;
+                    OnParsedMessage?.Invoke(new ParsedMessage(messageType, message, messageNumber));
+
+                    if (messageType == RpcMessageTypes.StreamAck || messageType == RpcMessageTypes.StreamMessage)
+                    {
+                        ReceiveAck((StreamMessage) message,
+                            messageNumber);
+                    }
+                }
+            };
         }
 
         private void CloseAll(Exception err)
@@ -41,7 +77,7 @@ namespace rpc_csharp
             oneTimeCallbacks.Clear();
         }
 
-        public void ReceiveAck(StreamMessage data, uint messageNumber)
+        private void ReceiveAck(StreamMessage data, uint messageNumber)
         {
             var key = $"{messageNumber},{data.SequenceId}";
             if (oneTimeCallbacks.TryGetValue(key, out var fut))
@@ -51,21 +87,15 @@ namespace rpc_csharp
             }
         }
 
-        public UniTask<StreamMessage> SendWithAck(StreamMessage data)
+        public UniTask<StreamMessage> SendStreamMessage(StreamMessage data)
         {
             var (_, messageNumber) = ProtocolHelpers.ParseMessageIdentifier(data.MessageIdentifier);
             var key = $"{messageNumber},{data.SequenceId}";
 
             // C# Promiches
             var ret = new UniTaskCompletionSource<StreamMessage>();
-            var accept = new Action<StreamMessage>(message =>
-            {
-                ret.TrySetResult(message);
-            });
-            var reject = new Action<Exception>(error =>
-            {
-                ret.TrySetException(error);
-            });
+            var accept = new Action<StreamMessage>(message => { ret.TrySetResult(message); });
+            var reject = new Action<Exception>(error => { ret.TrySetException(error); });
             oneTimeCallbacks.Add(key, (accept, reject));
 
             transport.SendMessage(data.ToByteArray());

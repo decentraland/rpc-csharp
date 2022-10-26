@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
 using NUnit.Framework;
-using Proto;
 using rpc_csharp;
+using rpc_csharp_demo.example;
 using rpc_csharp.transport;
 
 namespace rpc_csharp_test
@@ -13,15 +14,12 @@ namespace rpc_csharp_test
         private TestClient testClient;
         private BookContext context;
 
-        private class BookContext
-        {
-            public Book[] books;
-        }
-
         [SetUp]
         public async UniTask Setup()
         {
             var (client, server) = MemoryTransport.Create();
+            TestUtils.InstrumentTransport(client, "message->client");
+            TestUtils.InstrumentTransport(server, "message->server");
 
             context = new BookContext()
             {
@@ -38,34 +36,24 @@ namespace rpc_csharp_test
             rpcServer.AttachTransport(server, context);
             rpcServer.SetHandler((port, transport, testContext) =>
             {
-                BookService<BookContext>.RegisterService(port,
-                    async (request, context, ct) =>
-                    {
-                        foreach (var book in context.books)
-                        {
-                            if (request.Isbn == book.Isbn)
-                            {
-                                return book;
-                            }
-                        }
-
-                        return new Book();
-                    },
-                    (request, context) => QueryBooks(request, context));
+                BookServiceImpl.RegisterService(port, new BookServiceImpl());
             });
 
-            testClient = await TestClient.Create(client, BookService<BookContext>.ServiceName);
+            testClient = await TestClient.Create(client, BookServiceImpl.ServiceName);
         }
 
-        IEnumerator<Book> QueryBooks(QueryBooksRequest request, BookContext context)
+        IUniTaskAsyncEnumerable<Book> QueryBooks(QueryBooksRequest request, BookContext context)
         {
-            using (var iterator = context.books.AsEnumerable()!.GetEnumerator())
+            return UniTaskAsyncEnumerable.Create<Book>(async (writer, token) =>
             {
-                while (iterator.MoveNext())
+                using (var iterator = context.books.AsEnumerable()!.GetEnumerator())
                 {
-                    yield return iterator.Current;
+                    while (iterator.MoveNext() && !token.IsCancellationRequested)
+                    {
+                        await writer.YieldAsync(iterator.Current); // instead of `yield return`
+                    }
                 }
-            }
+            });
         }
 
         [Test]
@@ -84,7 +72,7 @@ namespace rpc_csharp_test
         }
 
         [Test]
-        public async UniTask StreamCall()
+        public async UniTask ServerStreamCall()
         {
             List<Book> books = new List<Book>();
             var query = new QueryBooksRequest()
@@ -92,9 +80,9 @@ namespace rpc_csharp_test
                 AuthorPrefix = "mr"
             };
 
-            await foreach (var futureElement in testClient.CallStream<Book>("QueryBooks", query))
+            await foreach (var element in await testClient.CallServerStream<Book>("QueryBooks", query))
             {
-                var book = await futureElement;
+                var book = element;
                 books.Add(book);
             }
 
@@ -111,7 +99,7 @@ namespace rpc_csharp_test
         }
 
         [Test]
-        public async UniTask StreamCallWithNullElements()
+        public async UniTask ServerStreamCallWithNullElements()
         {
             context.books = new[]
             {
@@ -132,9 +120,9 @@ namespace rpc_csharp_test
                 AuthorPrefix = "mr"
             };
 
-            await foreach (var futureElement in testClient.CallStream<Book>("QueryBooks", query))
+            await foreach (var element in await testClient.CallServerStream<Book>("QueryBooks", query))
             {
-                var book = await futureElement;
+                var book = element;
                 books.Add(book);
             }
 
@@ -144,6 +132,59 @@ namespace rpc_csharp_test
             Assert.AreEqual(expectedBook.Author, returnedBook.Author);
             Assert.AreEqual(expectedBook.Isbn, returnedBook.Isbn);
             Assert.AreEqual(expectedBook.Title, returnedBook.Title);
+        }
+        
+        [Test]
+        public async UniTask ClientStreamCall()
+        {
+            var query = UniTaskAsyncEnumerable.Create<GetBookRequest>(async (writer, token) =>
+            {
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 1234});
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 1111});
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 7666});
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 7668});
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 7669});
+            });
+
+            var response = testClient.CallClientStream<Book>("GetBookStream", query);
+            
+            var expectedBook = context.books.Last();
+            var book = await response;
+            Assert.AreEqual(expectedBook.Author, book.Author);
+            Assert.AreEqual(expectedBook.Isbn, book.Isbn);
+            Assert.AreEqual(expectedBook.Title, book.Title);
+        }
+        
+        [Test]
+        public async UniTask BidirectionalStreamCall()
+        {
+            var query = UniTaskAsyncEnumerable.Create<GetBookRequest>(async (writer, token) =>
+            {
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 1234});
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 1111});
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 7666});
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 7668});
+                await writer.YieldAsync(new GetBookRequest() {Isbn = 7669});
+            });
+
+            List<Book> books = new List<Book>();
+
+            await foreach (var element in await testClient.CallBidirectionalStream<Book>("QueryBooksStream", query))
+            {
+                var book = element;
+                books.Add(book);
+            }
+
+            Assert.AreEqual(context.books.Length, books.Count);
+
+            for (int i = 0; i < books.Count; i++)
+            {
+                var expectedBook = context.books[i];
+                var book = books[i];
+                Assert.AreEqual(expectedBook.Author, book.Author);
+                Assert.AreEqual(expectedBook.Isbn, book.Isbn);
+                Assert.AreEqual(expectedBook.Title, book.Title);
+            }
         }
     }
 }

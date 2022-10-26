@@ -1,4 +1,5 @@
 import { RpcClientPort } from "@dcl/rpc";
+import { GetBookRequest } from "./api";
 import { Book } from "./api";
 export declare const createBookServiceClient: <Context>(clientPort: RpcClientPort) => import("@dcl/rpc/dist/codegen-types").RawClient<import("@dcl/rpc/dist/codegen-types").FromTsProtoServiceDefinition<{
     readonly name: "BookService";
@@ -7,15 +8,15 @@ export declare const createBookServiceClient: <Context>(clientPort: RpcClientPor
         readonly getBook: {
             readonly name: "GetBook";
             readonly requestType: {
-                encode(message: import("./api").GetBookRequest, writer?: import("protobufjs").Writer): import("protobufjs").Writer;
-                decode(input: Uint8Array | import("protobufjs").Reader, length?: number): import("./api").GetBookRequest;
-                fromJSON(object: any): import("./api").GetBookRequest;
-                toJSON(message: import("./api").GetBookRequest): unknown;
+                encode(message: GetBookRequest, writer?: import("protobufjs").Writer): import("protobufjs").Writer;
+                decode(input: Uint8Array | import("protobufjs").Reader, length?: number): GetBookRequest;
+                fromJSON(object: any): GetBookRequest;
+                toJSON(message: GetBookRequest): unknown;
                 fromPartial<I extends {
                     isbn?: number;
                 } & {
                     isbn?: number;
-                } & Record<Exclude<keyof I, "isbn">, never>>(object: I): import("./api").GetBookRequest;
+                } & Record<Exclude<keyof I, "isbn">, never>>(object: I): GetBookRequest;
             };
             readonly requestStream: false;
             readonly responseType: {
@@ -50,6 +51,70 @@ export declare const createBookServiceClient: <Context>(clientPort: RpcClientPor
                 } & Record<Exclude<keyof I_2, "authorPrefix">, never>>(object: I_2): import("./api").QueryBooksRequest;
             };
             readonly requestStream: false;
+            readonly responseType: {
+                encode(message: Book, writer?: import("protobufjs").Writer): import("protobufjs").Writer;
+                decode(input: Uint8Array | import("protobufjs").Reader, length?: number): Book;
+                fromJSON(object: any): Book;
+                toJSON(message: Book): unknown;
+                fromPartial<I_1 extends {
+                    isbn?: number;
+                    title?: string;
+                    author?: string;
+                } & {
+                    isbn?: number;
+                    title?: string;
+                    author?: string;
+                } & Record<Exclude<keyof I_1, keyof Book>, never>>(object: I_1): Book;
+            };
+            readonly responseStream: true;
+            readonly options: {};
+        };
+        readonly getBookStream: {
+            readonly name: "GetBookStream";
+            readonly requestType: {
+                encode(message: GetBookRequest, writer?: import("protobufjs").Writer): import("protobufjs").Writer;
+                decode(input: Uint8Array | import("protobufjs").Reader, length?: number): GetBookRequest;
+                fromJSON(object: any): GetBookRequest;
+                toJSON(message: GetBookRequest): unknown;
+                fromPartial<I extends {
+                    isbn?: number;
+                } & {
+                    isbn?: number;
+                } & Record<Exclude<keyof I, "isbn">, never>>(object: I): GetBookRequest;
+            };
+            readonly requestStream: true;
+            readonly responseType: {
+                encode(message: Book, writer?: import("protobufjs").Writer): import("protobufjs").Writer;
+                decode(input: Uint8Array | import("protobufjs").Reader, length?: number): Book;
+                fromJSON(object: any): Book;
+                toJSON(message: Book): unknown;
+                fromPartial<I_1 extends {
+                    isbn?: number;
+                    title?: string;
+                    author?: string;
+                } & {
+                    isbn?: number;
+                    title?: string;
+                    author?: string;
+                } & Record<Exclude<keyof I_1, keyof Book>, never>>(object: I_1): Book;
+            };
+            readonly responseStream: false;
+            readonly options: {};
+        };
+        readonly queryBooksStream: {
+            readonly name: "QueryBooksStream";
+            readonly requestType: {
+                encode(message: GetBookRequest, writer?: import("protobufjs").Writer): import("protobufjs").Writer;
+                decode(input: Uint8Array | import("protobufjs").Reader, length?: number): GetBookRequest;
+                fromJSON(object: any): GetBookRequest;
+                toJSON(message: GetBookRequest): unknown;
+                fromPartial<I extends {
+                    isbn?: number;
+                } & {
+                    isbn?: number;
+                } & Record<Exclude<keyof I, "isbn">, never>>(object: I): GetBookRequest;
+            };
+            readonly requestStream: true;
             readonly responseType: {
                 encode(message: Book, writer?: import("protobufjs").Writer): import("protobufjs").Writer;
                 decode(input: Uint8Array | import("protobufjs").Reader, length?: number): Book;

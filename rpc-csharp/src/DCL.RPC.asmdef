@@ -2,7 +2,8 @@
     "name": "DCL.RPC",
     "rootNamespace": "",
     "references": [
-        "UniTask"
+        "UniTask",
+        "UniTask.Linq"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

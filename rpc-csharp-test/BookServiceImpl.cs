@@ -1,8 +1,6 @@
-using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
-using rpc_csharp;
 
 namespace rpc_csharp_demo.example
 {
