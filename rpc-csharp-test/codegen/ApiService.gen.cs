@@ -9,19 +9,24 @@ using Google.Protobuf;
 using rpc_csharp.protocol;
 using rpc_csharp;
 
-public abstract class IBookService<Context>
+public interface IBookService<Context>
+{
+
+  UniTask<Book> GetBook(GetBookRequest request, Context context, CancellationToken ct);
+
+  IUniTaskAsyncEnumerable<Book> QueryBooks(QueryBooksRequest request, Context context);
+
+  UniTask<Book> GetBookStream(IUniTaskAsyncEnumerable<GetBookRequest> streamRequest, Context context, CancellationToken ct);
+
+  IUniTaskAsyncEnumerable<Book> QueryBooksStream(IUniTaskAsyncEnumerable<GetBookRequest> streamRequest, Context context);
+
+}
+
+public static class BookServiceCodeGen
 {
   public const string ServiceName = "BookService";
 
-  protected abstract UniTask<Book> GetBook(GetBookRequest request, Context context, CancellationToken ct);
-
-  protected abstract IUniTaskAsyncEnumerable<Book> QueryBooks(QueryBooksRequest request, Context context);
-
-  protected abstract UniTask<Book> GetBookStream(IUniTaskAsyncEnumerable<GetBookRequest> streamRequest, Context context, CancellationToken ct);
-
-  protected abstract IUniTaskAsyncEnumerable<Book> QueryBooksStream(IUniTaskAsyncEnumerable<GetBookRequest> streamRequest, Context context);
-
-  public static void RegisterService(RpcServerPort<Context> port, IBookService<Context> service)
+  public static void RegisterService<Context>(RpcServerPort<Context> port, IBookService<Context> service)
   {
     var result = new ServerModuleDefinition<Context>();
       
