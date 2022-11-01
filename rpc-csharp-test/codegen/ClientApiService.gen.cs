@@ -6,11 +6,11 @@
 using Cysharp.Threading.Tasks;
 using rpc_csharp;
 
-public class ClientBookServiceService
+public class ClientBookService
 {
   private readonly RpcClientModule module;
 
-  public ClientApiService(RpcClientModule module)
+  public ClientBookService(RpcClientModule module)
   {
       this.module = module;
   }

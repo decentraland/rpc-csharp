@@ -12572,11 +12572,12 @@ using rpc_csharp;`);
     }
     // Services.
     serviceDescriptor.services.forEach((service) => {
-        printer.printLn(`public class Client${service.name}Service
+        const className = `Client${service.name}`;
+        printer.printLn(`public class ${className}
 {
   private readonly RpcClientModule module;
 
-  public ClientApiService(RpcClientModule module)
+  public ${className}(RpcClientModule module)
   {
       this.module = module;
   }`);
