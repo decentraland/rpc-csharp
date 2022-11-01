@@ -15,7 +15,7 @@ namespace rpc_csharp
 
         private readonly ITransport transport;
 
-        RpcClient(ITransport transport)
+        public RpcClient(ITransport transport)
         {
             this.transport = transport;
             dispatcher = new ClientRequestDispatcher(transport);
@@ -40,7 +40,7 @@ namespace rpc_csharp
     {
         internal readonly string portName;
         internal readonly uint portId;
-        public readonly ClientRequestDispatcher dispatcher;
+        internal readonly ClientRequestDispatcher dispatcher;
 
         internal static async UniTask<RpcClientPort> CreatePort(ClientRequestDispatcher dispatcher, string portName)
         {
@@ -67,7 +67,7 @@ namespace rpc_csharp
             this.portId = portId;
         }
 
-        private async UniTask<RpcClientModule> LoadModule(string serviceName)
+        public async UniTask<RpcClientModule> LoadModule(string serviceName)
         {
             var response = await dispatcher.Request((messageNumber) => new RequestModule
             {

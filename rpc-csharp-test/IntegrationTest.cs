@@ -11,7 +11,9 @@ namespace rpc_csharp_test
 {
     public class TestClientTest
     {
-        private TestClient testClient;
+        private RpcClient rpcClient;
+        private RpcClientPort clientPort;
+        private RpcClientModule clientModule;
         private BookContext context;
 
         [SetUp]
@@ -39,7 +41,10 @@ namespace rpc_csharp_test
                 BookServiceImpl.RegisterService(port, new BookServiceImpl());
             });
 
-            testClient = await TestClient.Create(client, BookServiceImpl.ServiceName);
+            //testClient = await TestClient.Create(client, BookServiceImpl.ServiceName);
+            rpcClient = new RpcClient(client);
+            clientPort = await rpcClient.CreatePort("my-port");
+            clientModule = await clientPort.LoadModule(BookServiceImpl.ServiceName);
         }
 
         IUniTaskAsyncEnumerable<Book> QueryBooks(QueryBooksRequest request, BookContext context)
@@ -61,7 +66,7 @@ namespace rpc_csharp_test
         {
             var expectedBook = context.books[4];
 
-            var book = await testClient.CallProcedure<Book>("GetBook", new GetBookRequest()
+            var book = await clientModule.CallProcedure<Book>("GetBook", new GetBookRequest()
             {
                 Isbn = expectedBook.Isbn
             });
@@ -80,7 +85,7 @@ namespace rpc_csharp_test
                 AuthorPrefix = "mr"
             };
 
-            await foreach (var element in await testClient.CallServerStream<Book>("QueryBooks", query))
+            await foreach (var element in await clientModule.CallServerStream<Book>("QueryBooks", query))
             {
                 var book = element;
                 books.Add(book);
@@ -120,7 +125,7 @@ namespace rpc_csharp_test
                 AuthorPrefix = "mr"
             };
 
-            await foreach (var element in await testClient.CallServerStream<Book>("QueryBooks", query))
+            await foreach (var element in await clientModule.CallServerStream<Book>("QueryBooks", query))
             {
                 var book = element;
                 books.Add(book);
@@ -146,7 +151,7 @@ namespace rpc_csharp_test
                 await writer.YieldAsync(new GetBookRequest() {Isbn = 7669});
             });
 
-            var response = testClient.CallClientStream<Book>("GetBookStream", query);
+            var response = clientModule.CallClientStream<Book>("GetBookStream", query);
             
             var expectedBook = context.books.Last();
             var book = await response;
@@ -169,7 +174,7 @@ namespace rpc_csharp_test
 
             List<Book> books = new List<Book>();
 
-            await foreach (var element in await testClient.CallBidirectionalStream<Book>("QueryBooksStream", query))
+            await foreach (var element in await clientModule.CallBidirectionalStream<Book>("QueryBooksStream", query))
             {
                 var book = element;
                 books.Add(book);
