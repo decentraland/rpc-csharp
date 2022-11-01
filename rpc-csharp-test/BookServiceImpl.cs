@@ -11,7 +11,7 @@ namespace rpc_csharp_demo.example
 
     public class BookServiceImpl : IBookService<BookContext>
     {
-        protected override async UniTask<Book> GetBook(GetBookRequest request, BookContext context,
+        public async UniTask<Book> GetBook(GetBookRequest request, BookContext context,
             CancellationToken ct)
         {
             foreach (var book in context.books)
@@ -25,7 +25,7 @@ namespace rpc_csharp_demo.example
             return new Book();
         }
 
-        protected override IUniTaskAsyncEnumerable<Book> QueryBooks(QueryBooksRequest request, BookContext context)
+        public IUniTaskAsyncEnumerable<Book> QueryBooks(QueryBooksRequest request, BookContext context)
         {
             return UniTaskAsyncEnumerable.Create<Book>(async (writer, token) =>
             {
@@ -37,7 +37,7 @@ namespace rpc_csharp_demo.example
             });
         }
 
-        protected override async UniTask<Book> GetBookStream(IUniTaskAsyncEnumerable<GetBookRequest> streamRequest, BookContext context, CancellationToken ct)
+        public async UniTask<Book> GetBookStream(IUniTaskAsyncEnumerable<GetBookRequest> streamRequest, BookContext context, CancellationToken ct)
         {
             var selectedBook = new Book();
             await foreach (var request in streamRequest)
@@ -56,7 +56,7 @@ namespace rpc_csharp_demo.example
             return selectedBook;
         }
 
-        protected override IUniTaskAsyncEnumerable<Book> QueryBooksStream(IUniTaskAsyncEnumerable<GetBookRequest> streamRequest, BookContext context)
+        public IUniTaskAsyncEnumerable<Book> QueryBooksStream(IUniTaskAsyncEnumerable<GetBookRequest> streamRequest, BookContext context)
         {
             return UniTaskAsyncEnumerable.Create<Book>(async (writer, token) =>
             {

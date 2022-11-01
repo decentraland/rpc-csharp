@@ -28,7 +28,7 @@ namespace rpc_csharp_demo.example
 
             rpcServer.SetHandler((port, transport, context) =>
             {
-                BookServiceImpl.RegisterService(port, new BookServiceImpl());
+                BookServiceCodeGen.RegisterService(port, new BookServiceImpl());
             });
 
             wss.AddWebSocketService("/", () =>
