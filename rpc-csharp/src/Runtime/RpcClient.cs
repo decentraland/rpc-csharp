@@ -44,15 +44,6 @@ namespace rpc_csharp
 
         internal static async UniTask<RpcClientPort> CreatePort(ClientRequestDispatcher dispatcher, string portName)
         {
-            var request = new CreatePort
-            {
-                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
-                    RpcMessageTypes.CreatePort,
-                    1
-                ),
-                PortName = portName
-            };
-
             var response = await dispatcher.Request((messageNumber) => new CreatePort
             {
                 MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
@@ -63,7 +54,10 @@ namespace rpc_csharp
             }.ToByteArray());
             
             var createPortResponse = response.message as CreatePortResponse;
-            return createPortResponse != null ? new RpcClientPort(dispatcher, portName, createPortResponse.PortId) : null;
+            
+            if (createPortResponse == null) throw new Exception("Invalid Create Port Response");
+            
+            return new RpcClientPort(dispatcher, portName, createPortResponse.PortId);
         }
 
         private RpcClientPort(ClientRequestDispatcher dispatcher, string portName, uint portId)
