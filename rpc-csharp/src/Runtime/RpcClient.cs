@@ -44,16 +44,19 @@ namespace rpc_csharp
 
         internal static async UniTask<RpcClientPort> CreatePort(ClientRequestDispatcher dispatcher, string portName)
         {
-            var response = await dispatcher.Request((messageNumber) => new CreatePort
+            var requestMessageNumber = dispatcher.NextMessageNumber();
+            var createPortPayload = new CreatePort
             {
                 MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
                     RpcMessageTypes.CreatePort,
-                    messageNumber
+                    requestMessageNumber
                 ),
                 PortName = portName
-            }.ToByteArray());
+            }.ToByteArray();
             
-            var createPortResponse = response.message as CreatePortResponse;
+            var parsedMessageFuture = await dispatcher.AwaitForMessage(requestMessageNumber, 
+                () => dispatcher.transport.SendMessage(createPortPayload));
+            var createPortResponse = parsedMessageFuture.message as CreatePortResponse;
             
             if (createPortResponse == null) throw new Exception("Invalid Create Port Response");
             
@@ -69,17 +72,22 @@ namespace rpc_csharp
 
         public async UniTask<RpcClientModule> LoadModule(string serviceName)
         {
-            var response = await dispatcher.Request((messageNumber) => new RequestModule
+            var requestMessageNumber = dispatcher.NextMessageNumber();
+            
+            var requestModulePayload = new RequestModule
             {
                 MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
                     RpcMessageTypes.RequestModule,
-                    messageNumber
+                    requestMessageNumber
                 ),
                 ModuleName = serviceName,
                 PortId = portId
-            }.ToByteArray());
+            }.ToByteArray();
             
-            var requestModuleResponse = response.message as RequestModuleResponse;
+            var parsedMessageFuture = await dispatcher.AwaitForMessage(requestMessageNumber, 
+                () => dispatcher.transport.SendMessage(requestModulePayload));
+
+            var requestModuleResponse = parsedMessageFuture.message as RequestModuleResponse;
 
             if (requestModuleResponse == null) throw new Exception("Invalid Request Module Response");
 
@@ -105,32 +113,30 @@ namespace rpc_csharp
             this.procedures = procedures;
         }
 
-        public async UniTask<T> CallProcedure<T>(string procedureName, IMessage args)
+        public async UniTask<T> CallUnaryProcedure<T>(string procedureName, IMessage payload)
             where T : IMessage, new()
         {
             if (!procedures.TryGetValue(procedureName, out uint procedureId))
             {
                 throw (new Exception($"Procedure {procedureName} not found"));
             }
-
-            var response = await port.dispatcher.Request(messageNumber => new Request()
-            {
-                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
-                    RpcMessageTypes.Request,
-                    messageNumber
-                ),
-                PortId = port.portId,
-                ProcedureId = procedureId,
-                Payload = args.ToByteString()
-            }.ToByteArray());
             
-            var parsedResponse = response.message as Response;
-            if (parsedResponse == null) throw new Exception("Invalid Response");
+            var requestMessageNumber = port.dispatcher.NextMessageNumber();
+            
+            var parsedResponse = await port.dispatcher.AwaitForMessage(requestMessageNumber, () =>
+            {
+                port.dispatcher.transport.SendMessage(
+                    ProtocolHelpers.RequestMessage(requestMessageNumber, port.portId, procedureId, payload.ToByteString()
+                    ));
+            });
+
+            var response = parsedResponse.message as Response;
+            if (response == null) throw new Exception("Invalid Response");
             var ret = new T();
-            return (T) ret.Descriptor.Parser.ParseFrom(parsedResponse.Payload);
+            return (T) ret.Descriptor.Parser.ParseFrom(response.Payload);
         }
 
-        public async UniTask<IUniTaskAsyncEnumerable<T>> CallServerStream<T>(string procedureName, IMessage payload)
+        public IUniTaskAsyncEnumerable<T> CallServerStream<T>(string procedureName, IMessage payload)
             where T : IMessage, new()
         {
             if (!procedures.TryGetValue(procedureName, out uint procedureId))
@@ -138,20 +144,15 @@ namespace rpc_csharp
                 throw (new Exception($"Procedure {procedureName} not found"));
             }
 
-            var response = await port.dispatcher.Request(messageNumber => new Request()
-            {
-                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
-                    RpcMessageTypes.Request,
-                    messageNumber
-                ),
-                PortId = port.portId,
-                ProcedureId = procedureId,
-                Payload = payload.ToByteString()
-            }.ToByteArray());
-            
-            var streamFromDispatcherFuture = StreamProtocol.HandleServerStream(port.dispatcher, response.messageNumber, port.portId);
+            var requestMessageNumber = port.dispatcher.NextMessageNumber();
 
-            return ProtocolHelpers.DeserializeMessageEnumerator(await streamFromDispatcherFuture, payload =>
+            var streamFromDispatcherFuture = StreamProtocol.HandleServerStream(port.dispatcher, requestMessageNumber, port.portId);
+            
+            port.dispatcher.transport.SendMessage(
+                ProtocolHelpers.RequestMessage(requestMessageNumber, port.portId, procedureId, payload.ToByteString()
+                ));
+
+            return ProtocolHelpers.DeserializeMessageEnumerator(streamFromDispatcherFuture, payload =>
             {
                 var ret = new T();
                 return (T) ret.Descriptor.Parser.ParseFrom(payload);
@@ -167,20 +168,16 @@ namespace rpc_csharp
             }
 
             var clientStreamMessageNumber = port.dispatcher.NextMessageNumber();
+            var requestMessageNumber = port.dispatcher.NextMessageNumber();
 
-            var responseFuture = port.dispatcher.Request(messageNumber => new Request()
-            {
-                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
-                    RpcMessageTypes.Request,
-                    messageNumber
-                ),
-                PortId = port.portId,
-                ProcedureId = procedureId
-            }.ToByteArray());
-
+            var responseFuture = port.dispatcher.AwaitForMessage(requestMessageNumber);
+            
             // No await! The stream is independent from the response
             StreamProtocol.HandleClientStream(port.dispatcher, clientStreamMessageNumber, port.portId,
                 ProtocolHelpers.SerializeMessageEnumerator<IMessage>(requestStream));
+            
+            port.dispatcher.transport.SendMessage(
+                ProtocolHelpers.RequestMessageClientStream(requestMessageNumber, port.portId, procedureId, clientStreamMessageNumber));
 
             var parsedResponse = (await responseFuture).message as Response;
             if (parsedResponse == null) throw new Exception("Invalid Response");
@@ -188,7 +185,7 @@ namespace rpc_csharp
             return (T) ret.Descriptor.Parser.ParseFrom(parsedResponse.Payload);
         }
         
-        public async UniTask<IUniTaskAsyncEnumerable<T>> CallBidirectionalStream<T>(string procedureName, IUniTaskAsyncEnumerable<IMessage> requestStream)
+        public IUniTaskAsyncEnumerable<T> CallBidirectionalStream<T>(string procedureName, IUniTaskAsyncEnumerable<IMessage> requestStream)
             where T : IMessage, new()
         {
             if (!procedures.TryGetValue(procedureName, out uint procedureId))
@@ -199,27 +196,16 @@ namespace rpc_csharp
             var clientStreamMessageNumber = port.dispatcher.NextMessageNumber();
             var requestMessageNumber = port.dispatcher.NextMessageNumber();
 
-            var request = new Request()
-            {
-                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
-                    RpcMessageTypes.Request,
-                    requestMessageNumber
-                ),
-                PortId = port.portId,
-                ProcedureId = procedureId,
-                ClientStream = clientStreamMessageNumber,
-                Payload = ByteString.Empty
-            };
-
             var streamFromDispatcherFuture = StreamProtocol.HandleServerStream(port.dispatcher, requestMessageNumber, port.portId);
             
             // No await! The stream is independent from the response
             StreamProtocol.HandleClientStream(port.dispatcher, clientStreamMessageNumber, port.portId,
                 ProtocolHelpers.SerializeMessageEnumerator<IMessage>(requestStream));
             
-            port.dispatcher.transport.SendMessage(request.ToByteArray());
+            port.dispatcher.transport.SendMessage(
+                ProtocolHelpers.RequestMessageClientStream(requestMessageNumber, port.portId, procedureId, clientStreamMessageNumber));
 
-            return ProtocolHelpers.DeserializeMessageEnumerator(await streamFromDispatcherFuture, payload =>
+            return ProtocolHelpers.DeserializeMessageEnumerator(streamFromDispatcherFuture, payload =>
             {
                 var ret = new T();
                 return (T) ret.Descriptor.Parser.ParseFrom(payload);

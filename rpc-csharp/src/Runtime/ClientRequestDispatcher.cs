@@ -1,3 +1,4 @@
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Google.Protobuf;
 using rpc_csharp.protocol;
@@ -7,7 +8,7 @@ namespace rpc_csharp
 {
     public class ClientRequestDispatcher : MessageDispatcher
     {
-        public delegate byte[] RequestCall(uint messageNumber);
+        public delegate void SendMessage();
 
         private static uint globalMessageNumber = 0;
         
@@ -15,10 +16,8 @@ namespace rpc_csharp
         {
         }
 
-        public UniTask<ParsedMessage> Request(RequestCall cb)
+        public UniTask<ParsedMessage> AwaitForMessage(uint messageNumber, SendMessage sendMessage = null)
         {
-            var messageNumber = NextMessageNumber();
-            var requestBytes = cb.Invoke(messageNumber);
             return UniTask.Create(() =>
             {
                 var responseFuture = new UniTaskCompletionSource<ParsedMessage>();
@@ -32,8 +31,9 @@ namespace rpc_csharp
                 }
 
                 OnParsedMessage += OnMessage;
-                if (requestBytes != null)
-                    transport.SendMessage(requestBytes);
+
+                if (sendMessage != null)
+                    sendMessage();
 
                 return responseFuture.Task;
             });

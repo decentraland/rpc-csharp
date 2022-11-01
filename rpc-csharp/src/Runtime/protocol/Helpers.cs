@@ -10,6 +10,34 @@ namespace rpc_csharp.protocol
 {
     public static class ProtocolHelpers
     {
+        public static byte[] RequestMessage(uint messageNumber, uint portId, uint procedureId, ByteString payload = null)
+        {
+            return new Request()
+            {
+                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                    RpcMessageTypes.Request,
+                    messageNumber
+                ),
+                PortId = portId,
+                ProcedureId = procedureId,
+                Payload = payload ?? ByteString.Empty,
+            }.ToByteArray();
+        }
+        public static byte[] RequestMessageClientStream(uint messageNumber, uint portId, uint procedureId, uint clientStream, ByteString payload = null)
+        {
+            return new Request()
+            {
+                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                    RpcMessageTypes.Request,
+                    messageNumber
+                ),
+                PortId = portId,
+                ProcedureId = procedureId,
+                Payload = payload ?? ByteString.Empty,
+                ClientStream = clientStream
+            }.ToByteArray();
+        }
+        
         public static byte[] CloseStreamMessage(uint messageNumber, uint sequenceId, uint portId)
         {
             var streamMessage = new StreamMessage()

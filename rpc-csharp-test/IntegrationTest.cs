@@ -9,7 +9,7 @@ using rpc_csharp.transport;
 
 namespace rpc_csharp_test
 {
-    public class TestClientTest
+    public class IntegrationTest
     {
         private RpcClient rpcClient;
         private RpcClientPort clientPort;
@@ -66,7 +66,7 @@ namespace rpc_csharp_test
         {
             var expectedBook = context.books[4];
 
-            var book = await clientModule.CallProcedure<Book>("GetBook", new GetBookRequest()
+            var book = await clientModule.CallUnaryProcedure<Book>("GetBook", new GetBookRequest()
             {
                 Isbn = expectedBook.Isbn
             });
@@ -85,7 +85,7 @@ namespace rpc_csharp_test
                 AuthorPrefix = "mr"
             };
 
-            await foreach (var element in await clientModule.CallServerStream<Book>("QueryBooks", query))
+            await foreach (var element in clientModule.CallServerStream<Book>("QueryBooks", query))
             {
                 var book = element;
                 books.Add(book);
@@ -125,7 +125,7 @@ namespace rpc_csharp_test
                 AuthorPrefix = "mr"
             };
 
-            await foreach (var element in await clientModule.CallServerStream<Book>("QueryBooks", query))
+            await foreach (var element in clientModule.CallServerStream<Book>("QueryBooks", query))
             {
                 var book = element;
                 books.Add(book);
@@ -174,7 +174,7 @@ namespace rpc_csharp_test
 
             List<Book> books = new List<Book>();
 
-            await foreach (var element in await clientModule.CallBidirectionalStream<Book>("QueryBooksStream", query))
+            await foreach (var element in clientModule.CallBidirectionalStream<Book>("QueryBooksStream", query))
             {
                 var book = element;
                 books.Add(book);
