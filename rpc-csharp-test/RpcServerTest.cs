@@ -36,7 +36,7 @@ namespace rpc_csharp_test
             rpcServer.AttachTransport(server, context);
             rpcServer.SetHandler((port, transport, testContext) =>
             {
-                BookServiceImpl.RegisterService(port, new BookServiceImpl());
+                BookServiceCodeGen.RegisterService(port, new BookServiceImpl());
             });
         }
 

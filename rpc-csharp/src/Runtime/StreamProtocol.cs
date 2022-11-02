@@ -85,24 +85,9 @@ namespace rpc_csharp
             await SendStreamThroughTransport(messageDispatcher, transport, messageNumber, portId, stream);
         }
 
-        public static async UniTask<IUniTaskAsyncEnumerable<ByteString>> HandleServerStream(MessageDispatcher dispatcher, uint messageNumber, uint portId)
+        public static IUniTaskAsyncEnumerable<ByteString> HandleServerStream(MessageDispatcher dispatcher, uint messageNumber, uint portId)
         {
-            // Wait for open stream
-            UniTaskCompletionSource responseFuture = new UniTaskCompletionSource();
-
-            void OnParsedMessage(ParsedMessage parsedMessage)
-            {
-                if (parsedMessage.messageNumber == messageNumber)
-                {
-                    responseFuture.TrySetResult();
-                    dispatcher.OnParsedMessage -= OnParsedMessage;
-                }
-            }
-
-            dispatcher.OnParsedMessage += OnParsedMessage;
-            
-            await responseFuture.Task;
-            return new StreamFromDispatcher(dispatcher, messageNumber, portId);
+            return new StreamFromDispatcher(dispatcher, messageNumber, portId, true);
         }
         
         public static async UniTask HandleClientStream(MessageDispatcher dispatcher, uint messageNumber, uint portId, IUniTaskAsyncEnumerable<ByteString> requestStream)
@@ -124,23 +109,25 @@ namespace rpc_csharp
             await responseFuture.Task;
             await SendStreamThroughTransport(dispatcher, dispatcher.transport, messageNumber, portId, requestStream);
         }
-        
+
         public class StreamFromDispatcher : IUniTaskAsyncEnumerable<ByteString>
         {
             private readonly MessageDispatcher dispatcher;
             private readonly uint messageNumber;
             private readonly uint portId;
+            private readonly bool waitForServerOpen;
             private bool wasOpen = false;
             private uint lastReceivedSequenceId = 0;
             private bool isRemoteClosed = false;
-            private ProtocolHelpers.AsyncQueue<ByteString> channel;
+            private readonly ProtocolHelpers.AsyncQueue<ByteString> channel;
 
-            public StreamFromDispatcher(MessageDispatcher dispatcher, uint messageNumber, uint portId)
+            public StreamFromDispatcher(MessageDispatcher dispatcher, uint messageNumber, uint portId, bool waitForServerOpen = false)
             {
                 channel = new ProtocolHelpers.AsyncQueue<ByteString>(RequestingNext);
                 this.dispatcher = dispatcher;
                 this.messageNumber = messageNumber;
                 this.portId = portId;
+                this.waitForServerOpen = waitForServerOpen;
 
                 dispatcher.OnParsedMessage += OnProcessMessage;
 
@@ -189,7 +176,10 @@ namespace rpc_csharp
                             }
                             else
                             {
-                                channel.Enqueue(streamMessage.Payload);
+                                if (!waitForServerOpen || lastReceivedSequenceId != 0) // if we're waiting for the stream opens... we ignore the enqueue
+                                {
+                                    channel.Enqueue(streamMessage.Payload);
+                                }
                             }
                         }
                     }

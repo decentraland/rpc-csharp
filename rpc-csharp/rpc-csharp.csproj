@@ -19,8 +19,8 @@
         <PackageReference Include="UniTask" Version="2.3.1" />
     </ItemGroup>
 
-    <Target Name="protogen" BeforeTargets="BeforeBuild">
+    <!--<Target Name="protogen" BeforeTargets="BeforeBuild">
         <Exec WorkingDirectory="$(ProjectDir)src/Runtime/protocol/" Command="./build.sh" />
-    </Target>
+    </Target>-->
     
 </Project>
