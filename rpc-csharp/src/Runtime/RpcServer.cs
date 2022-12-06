@@ -17,6 +17,7 @@ namespace rpc_csharp
             new Dictionary<uint, RpcServerPort<TContext>>();
 
         private RpcServerHandler<TContext> handler;
+        private ITransport transport;
 
         private readonly CancellationTokenSource cancellationTokenSource;
 
@@ -29,6 +30,13 @@ namespace rpc_csharp
         {
             cancellationTokenSource.Cancel();
             cancellationTokenSource.Dispose();
+
+            foreach (var port in ports.Values)
+            {
+                port.Close();
+            }
+
+            transport.Close();
         }
 
         private RpcServerPort<TContext> HandleCreatePort(CreatePort message, uint messageNumber, TContext context,
@@ -49,6 +57,7 @@ namespace rpc_csharp
                 PortId = port.portId
             };
             transport.SendMessage(response.ToByteArray());
+            this.transport = transport;
 
             return port;
         }
@@ -79,7 +88,7 @@ namespace rpc_csharp
 
             var response = new RequestModuleResponse
             {
-                Procedures = {pbProcedures},
+                Procedures = { pbProcedures },
                 MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
                     RpcMessageTypes.RequestModuleResponse,
                     messageNumber
@@ -160,15 +169,15 @@ namespace rpc_csharp
                 switch (parsedMessage.messageType)
                 {
                     case RpcMessageTypes.CreatePort:
-                        HandleCreatePort((CreatePort) parsedMessage.message, parsedMessage.messageNumber, context,
+                        HandleCreatePort((CreatePort)parsedMessage.message, parsedMessage.messageNumber, context,
                             transport);
                         break;
                     case RpcMessageTypes.RequestModule:
-                        await HandleRequestModule((RequestModule) parsedMessage.message, parsedMessage.messageNumber,
+                        await HandleRequestModule((RequestModule)parsedMessage.message, parsedMessage.messageNumber,
                             transport);
                         break;
                     case RpcMessageTypes.Request:
-                        await HandleRequest((Request) parsedMessage.message, parsedMessage.messageNumber, context,
+                        await HandleRequest((Request)parsedMessage.message, parsedMessage.messageNumber, context,
                             transport, messageDispatcher);
                         break;
                     case RpcMessageTypes.StreamAck:
