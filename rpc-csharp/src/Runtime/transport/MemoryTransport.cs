@@ -49,7 +49,7 @@ namespace rpc_csharp.transport
 
         public void Close()
         {
-            sender.GetOnCloseEvent().Invoke();
+            // sender.GetOnCloseEvent().Invoke();
         }
 
         public event Action OnCloseEvent;
