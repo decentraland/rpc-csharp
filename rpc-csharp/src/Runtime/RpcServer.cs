@@ -36,7 +36,7 @@ namespace rpc_csharp
                 port.Close();
             }
 
-            transport?.Close();
+            transport?.Dispose();
         }
 
         private RpcServerPort<TContext> HandleCreatePort(CreatePort message, uint messageNumber, TContext context,
