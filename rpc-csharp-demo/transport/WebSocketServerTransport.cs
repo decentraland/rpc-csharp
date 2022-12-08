@@ -1,22 +1,23 @@
 using System;
 using rpc_csharp.transport;
+using WebSocketSharp;
 using WebSocketSharp.Server;
 
 public class WebSocketServerTransport : WebSocketBehavior, ITransport
 {
-    protected override void OnMessage(WebSocketSharp.MessageEventArgs e)
+    protected override void OnMessage(MessageEventArgs e)
     {
         base.OnMessage(e);
         OnMessageEvent?.Invoke(e.RawData);
     }
 
-    protected override void OnError(WebSocketSharp.ErrorEventArgs e)
+    protected override void OnError(ErrorEventArgs e)
     {
         base.OnError(e);
         OnErrorEvent?.Invoke(e.Message);
     }
 
-    protected override void OnClose(WebSocketSharp.CloseEventArgs e)
+    protected override void OnClose(CloseEventArgs e)
     {
         base.OnClose(e);
         OnCloseEvent?.Invoke();
@@ -36,6 +37,14 @@ public class WebSocketServerTransport : WebSocketBehavior, ITransport
     public void Close()
     {
         Sessions.CloseSession(ID);
+    }
+
+    public void Dispose()
+    {
+        OnCloseEvent = null;
+        OnErrorEvent = null;
+        OnMessageEvent = null;
+        OnConnectEvent = null;
     }
 
     public event Action OnCloseEvent;
