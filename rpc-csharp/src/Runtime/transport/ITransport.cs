@@ -2,7 +2,7 @@ using System;
 
 namespace rpc_csharp.transport
 {
-    public interface ITransport
+    public interface ITransport : IDisposable
     {
         // Functions
         void SendMessage(byte[] data);

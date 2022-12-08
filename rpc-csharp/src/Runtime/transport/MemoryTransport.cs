@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 
 namespace rpc_csharp.transport
@@ -10,14 +9,13 @@ namespace rpc_csharp.transport
 
         private MemoryTransport()
         {
-            
         }
 
         public static (ITransport, ITransport) Create()
         {
             var client = new MemoryTransport();
             var server = new MemoryTransport();
-                
+
             client.Attach(server);
             server.Attach(client);
 
@@ -28,15 +26,17 @@ namespace rpc_csharp.transport
         {
             this.sender = sender;
         }
+
         public Action<byte[]> GetOnMessageEvent()
         {
             return OnMessageEvent;
         }
-            
+
         public Action GetOnCloseEvent()
         {
             return OnCloseEvent;
         }
+
         public void SendMessage(byte[] data)
         {
             // Decouple
@@ -50,6 +50,14 @@ namespace rpc_csharp.transport
         public void Close()
         {
             sender.GetOnCloseEvent().Invoke();
+        }
+
+        public void Dispose()
+        {
+            OnCloseEvent = null;
+            OnErrorEvent = null;
+            OnMessageEvent = null;
+            OnConnectEvent = null;
         }
 
         public event Action OnCloseEvent;
