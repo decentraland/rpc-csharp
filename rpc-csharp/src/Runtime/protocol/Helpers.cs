@@ -1,20 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using Google.Protobuf;
-using rpc_csharp.transport;
 
 namespace rpc_csharp.protocol
 {
     public static class ProtocolHelpers
     {
-        public static byte[] RequestMessage(uint messageNumber, uint portId, uint procedureId, ByteString payload = null)
+        public static byte[] RequestMessage(uint messageNumber, uint portId, uint procedureId,
+            ByteString payload = null)
         {
             return new Request()
             {
-                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                MessageIdentifier = CalculateMessageIdentifier(
                     RpcMessageTypes.Request,
                     messageNumber
                 ),
@@ -23,11 +22,13 @@ namespace rpc_csharp.protocol
                 Payload = payload ?? ByteString.Empty,
             }.ToByteArray();
         }
-        public static byte[] RequestMessageClientStream(uint messageNumber, uint portId, uint procedureId, uint clientStream, ByteString payload = null)
+
+        public static byte[] RequestMessageClientStream(uint messageNumber, uint portId, uint procedureId,
+            uint clientStream, ByteString payload = null)
         {
             return new Request()
             {
-                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                MessageIdentifier = CalculateMessageIdentifier(
                     RpcMessageTypes.Request,
                     messageNumber
                 ),
@@ -37,7 +38,7 @@ namespace rpc_csharp.protocol
                 ClientStream = clientStream
             }.ToByteArray();
         }
-        
+
         public static byte[] CloseStreamMessage(uint messageNumber, uint sequenceId, uint portId)
         {
             var streamMessage = new StreamMessage()
@@ -54,7 +55,7 @@ namespace rpc_csharp.protocol
 
             return streamMessage.ToByteArray();
         }
-        
+
         public static byte[] StreamAckMessage(uint messageNumber, uint sequenceId, uint portId)
         {
             var streamMessage = new StreamMessage()
@@ -75,13 +76,13 @@ namespace rpc_csharp.protocol
         // @internal
         public static (RpcMessageTypes, uint) ParseMessageIdentifier(uint value)
         {
-            return ((RpcMessageTypes) ((value >> 27) & 0xf), value & 0x07ffffff);
+            return ((RpcMessageTypes)((value >> 27) & 0xf), value & 0x07ffffff);
         }
 
         // @internal
         public static uint CalculateMessageIdentifier(RpcMessageTypes messageType, uint messageNumber)
         {
-            return (((uint) messageType & 0xf) << 27) | (messageNumber & 0x07ffffff);
+            return (((uint)messageType & 0xf) << 27) | (messageNumber & 0x07ffffff);
         }
 
         public static (RpcMessageTypes, object, uint)? ParseProtocolMessage(byte[] data)
@@ -117,8 +118,9 @@ namespace rpc_csharp.protocol
 
             return null;
         }
-        
-        public static IUniTaskAsyncEnumerable<ByteString> SerializeMessageEnumerator<T>(IUniTaskAsyncEnumerable<T> generator) where T : IMessage
+
+        public static IUniTaskAsyncEnumerable<ByteString> SerializeMessageEnumerator<T>(
+            IUniTaskAsyncEnumerable<T> generator) where T : IMessage
         {
             return UniTaskAsyncEnumerable.Create<ByteString>(async (writer, token) =>
             {
@@ -126,15 +128,17 @@ namespace rpc_csharp.protocol
                 {
                     if (token.IsCancellationRequested)
                         break;
-                    
+
                     if (current != null)
                         await writer.YieldAsync(current.ToByteString()); // instead of `yield return`
                 }
             });
         }
-        
+
         public delegate T Parser<out T>(ByteString payload);
-        public static IUniTaskAsyncEnumerable<T> DeserializeMessageEnumerator<T>(IUniTaskAsyncEnumerable<ByteString> generator, Parser<T> parseFunc)
+
+        public static IUniTaskAsyncEnumerable<T> DeserializeMessageEnumerator<T>(
+            IUniTaskAsyncEnumerable<ByteString> generator, Parser<T> parseFunc)
         {
             return UniTaskAsyncEnumerable.Create<T>(async (writer, token) =>
             {
@@ -156,17 +160,31 @@ namespace rpc_csharp.protocol
             Close,
             Next
         }
+
         public class AsyncQueue<T> : IUniTaskAsyncEnumerator<T> where T : class
         {
+            readonly struct Settler
+            {
+                public readonly Action<T, bool> resolve;
+                public readonly Action<Exception> reject;
+
+                public Settler(Action<T, bool> resolve, Action<Exception> reject)
+                {
+                    this.reject = reject;
+                    this.resolve = resolve;
+                }
+            }
+
             private readonly RequestingNext requestingNext;
             private bool closed = false;
             private bool closing = false;
             private LinkedList<T> values = new LinkedList<T>();
-            private LinkedList<(Action<(T, bool)>, Action<Exception>)> settlers = new LinkedList<(Action<(T, bool)>, Action<Exception>)>();
+            private LinkedList<Settler> settlers = new LinkedList<Settler>();
             private Exception error = null;
             private T current;
+
             public delegate void RequestingNext(AsyncQueue<T> queue, AsyncQueueActionType action);
-            
+
             public AsyncQueue(RequestingNext requestingNext)
             {
                 this.requestingNext = requestingNext;
@@ -178,7 +196,9 @@ namespace rpc_csharp.protocol
                 {
                     throw new InvalidOperationException("Channel is closed");
                 }
-                if (settlers.Count > 0) {
+
+                if (settlers.Count > 0)
+                {
                     if (values.Count > 0)
                     {
                         throw new InvalidOperationException("Illegal internal state");
@@ -186,11 +206,14 @@ namespace rpc_csharp.protocol
 
                     var settler = settlers.First.Value;
                     settlers.RemoveFirst();
-                    settler.Item1((value, true));
-                } else {
+                    settler.resolve(value, true);
+                }
+                else
+                {
                     values.AddLast(value);
                 }
             }
+
             public async UniTask DisposeAsync()
             {
                 if (!closing && !closed)
@@ -220,16 +243,17 @@ namespace rpc_csharp.protocol
                     {
                         throw new InvalidOperationException("Illegal internal state");
                     }
+
                     return UniTask.FromResult(false);
                 }
 
                 // Wait for new values to be enqueued
                 var ret = new UniTaskCompletionSource<bool>();
-                var accept = new Action<(T, bool)>(message =>
+                var accept = new Action<T, bool>((value, hasValue) =>
                 {
-                    if (message.Item2)
+                    if (hasValue)
                     {
-                        current = message.Item1;
+                        current = value;
                         ret.TrySetResult(true);
                     }
                     else
@@ -239,31 +263,31 @@ namespace rpc_csharp.protocol
                     }
                 });
 
-                var reject = new Action<Exception>(error =>
-                {
-                    ret.TrySetException(error);
-                });
+                var reject = new Action<Exception>(error => { ret.TrySetException(error); });
 
-                settlers.AddLast((accept, reject));
+                settlers.AddLast(new Settler(accept, reject));
                 requestingNext(this, AsyncQueueActionType.Next);
                 return ret.Task;
             }
-            
-            public void Close(Exception error = null) {
+
+            public void Close(Exception error = null)
+            {
                 if (error != null)
                 {
                     foreach (var settler in settlers)
                     {
-                        settler.Item2(error);
+                        settler.reject(error);
                     }
+
                     settlers.Clear();
                 }
                 else
                 {
                     foreach (var settler in settlers)
                     {
-                        settler.Item1((null, false));
+                        settler.resolve(null, false);
                     }
+
                     settlers.Clear();
                 }
 
@@ -281,19 +305,19 @@ namespace rpc_csharp.protocol
 
             public T Current => current;
         }
-        
+
         public class StreamEnumerator<T> : IUniTaskAsyncEnumerator<UniTask<ByteString>> where T : IMessage
         {
             private readonly IEnumerator<T> enumerator;
 
             private UniTaskCompletionSource<ByteString> messageFuture;
             private bool isDisposed = false;
-            
+
             public StreamEnumerator(IEnumerator<T> enumerator)
             {
                 this.enumerator = enumerator;
             }
-            
+
             public async UniTask DisposeAsync()
             {
                 isDisposed = true;
@@ -334,7 +358,7 @@ namespace rpc_csharp.protocol
         {
             var response = new Response
             {
-                MessageIdentifier = ProtocolHelpers.CalculateMessageIdentifier(
+                MessageIdentifier = CalculateMessageIdentifier(
                     RpcMessageTypes.Response,
                     messageNumber
                 ),
