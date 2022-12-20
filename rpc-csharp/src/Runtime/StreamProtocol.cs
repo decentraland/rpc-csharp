@@ -110,7 +110,7 @@ namespace rpc_csharp
             await SendStreamThroughTransport(dispatcher, dispatcher.transport, messageNumber, portId, requestStream);
         }
 
-        public class StreamFromDispatcher : IUniTaskAsyncEnumerable<ByteString>
+        public class StreamFromDispatcher : IUniTaskAsyncEnumerable<ByteString>, IDisposable
         {
             private readonly MessageDispatcher dispatcher;
             private readonly uint messageNumber;
@@ -130,16 +130,25 @@ namespace rpc_csharp
                 this.waitForServerOpen = waitForServerOpen;
 
                 dispatcher.OnParsedMessage += OnProcessMessage;
+                dispatcher.transport.OnCloseEvent += OnTransportCloseEvent;
+                dispatcher.transport.OnErrorEvent += OnTransportErrorEvent;
+            }
+            
+            public void Dispose()
+            {
+                dispatcher.OnParsedMessage -= OnProcessMessage;
+                dispatcher.transport.OnCloseEvent -= OnTransportCloseEvent;
+                dispatcher.transport.OnErrorEvent -= OnTransportErrorEvent;
+            }
 
-                dispatcher.transport.OnCloseEvent += () =>
-                {
-                    channel.Close(new InvalidOperationException("RPC Transport closed"));
-                };
+            private void OnTransportErrorEvent(string s)
+            {
+                channel.Close(new InvalidOperationException("RPC Transport failed"));
+            }
 
-                dispatcher.transport.OnErrorEvent += s =>
-                {
-                    channel.Close(new InvalidOperationException("RPC Transport failed"));
-                };
+            private void OnTransportCloseEvent()
+            {
+                channel.Close(new InvalidOperationException("RPC Transport closed"));
             }
 
             private void RequestingNext(ProtocolHelpers.AsyncQueue<ByteString> queue, ProtocolHelpers.AsyncQueueActionType action)

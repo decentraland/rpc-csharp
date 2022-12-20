@@ -13,13 +13,14 @@ namespace rpc_csharp
     {
         private uint lastPortId = 0;
 
-        private readonly Dictionary<uint, RpcServerPort<TContext>> ports =
+        internal readonly Dictionary<uint, RpcServerPort<TContext>> ports =
             new Dictionary<uint, RpcServerPort<TContext>>();
 
         private RpcServerHandler<TContext> handler;
-        private ITransport transport;
+        private readonly List<ITransport> transportList = new List<ITransport>();
 
         private readonly CancellationTokenSource cancellationTokenSource;
+        private bool disposed = false;
 
         public RpcServer()
         {
@@ -28,6 +29,10 @@ namespace rpc_csharp
 
         public void Dispose()
         {
+            if (disposed)
+                return;
+            disposed = true;
+
             cancellationTokenSource.Cancel();
             cancellationTokenSource.Dispose();
 
@@ -35,8 +40,12 @@ namespace rpc_csharp
             {
                 port.Close();
             }
+            ports.Clear();
 
-            transport?.Dispose();
+            foreach (var transport in transportList)
+            {
+                transport.Dispose();
+            }
         }
 
         private RpcServerPort<TContext> HandleCreatePort(CreatePort message, uint messageNumber, TContext context,
@@ -57,9 +66,19 @@ namespace rpc_csharp
                 PortId = port.portId
             };
             transport.SendMessage(response.ToByteArray());
-            this.transport = transport;
 
             return port;
+        }
+
+        private void HandleDestroyPort(DestroyPort message)
+        {
+            if (!ports.TryGetValue(message.PortId, out var port))
+            {
+                throw new InvalidOperationException($"Cannot find port {message.PortId}");
+            }
+
+            port.Close();
+            ports.Remove(message.PortId);
         }
 
         private async UniTask HandleRequestModule(RequestModule message, uint messageNumber, ITransport transport)
@@ -163,14 +182,22 @@ namespace rpc_csharp
         public void AttachTransport(ITransport transport, TContext context)
         {
             var messageDispatcher = new MessageDispatcher(transport);
-
+            
+            transportList.Add(transport);
+            
             messageDispatcher.OnParsedMessage += async (ParsedMessage parsedMessage) =>
             {
+                if (disposed)
+                    return;
+
                 switch (parsedMessage.messageType)
                 {
                     case RpcMessageTypes.CreatePort:
                         HandleCreatePort((CreatePort)parsedMessage.message, parsedMessage.messageNumber, context,
                             transport);
+                        break;
+                    case RpcMessageTypes.DestroyPort:
+                        HandleDestroyPort((DestroyPort)parsedMessage.message);
                         break;
                     case RpcMessageTypes.RequestModule:
                         await HandleRequestModule((RequestModule)parsedMessage.message, parsedMessage.messageNumber,

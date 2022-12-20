@@ -21,7 +21,7 @@ namespace rpc_csharp
         }
     }
 
-    public class MessageDispatcher
+    public class MessageDispatcher : IDisposable
     {
         public static int ID = 0;
         public int _id = 0;
@@ -37,30 +37,43 @@ namespace rpc_csharp
             _id = ++ID;
             this.transport = transport;
 
-            transport.OnCloseEvent += () =>
+            transport.OnCloseEvent += OnTransportCloseEvent;
+            transport.OnErrorEvent += OnTransportErrorEvent;
+            transport.OnMessageEvent += OnTransportMessageEvent;
+        }
+        
+        public void Dispose()
+        {
+            transport.OnCloseEvent -= OnTransportCloseEvent;
+            transport.OnErrorEvent -= OnTransportErrorEvent;
+            transport.OnMessageEvent -= OnTransportMessageEvent;
+        }
+
+        private void OnTransportMessageEvent(byte[] data)
+        {
+            var parsedMessage = ProtocolHelpers.ParseProtocolMessage(data);
+
+            if (parsedMessage != null)
             {
-                var err = new Exception("Transport closed while waiting the ACK");
-                CloseAll(err);
-            };
+                var (messageType, message, messageNumber) = parsedMessage.Value;
+                OnParsedMessage?.Invoke(new ParsedMessage(messageType, message, messageNumber));
 
-            transport.OnErrorEvent += (err) => { CloseAll(new Exception(err)); };
-
-            transport.OnMessageEvent += data =>
-            {
-                var parsedMessage = ProtocolHelpers.ParseProtocolMessage(data);
-
-                if (parsedMessage != null)
+                if (messageType == RpcMessageTypes.StreamAck || messageType == RpcMessageTypes.StreamMessage)
                 {
-                    var (messageType, message, messageNumber) = parsedMessage.Value;
-                    OnParsedMessage?.Invoke(new ParsedMessage(messageType, message, messageNumber));
-
-                    if (messageType == RpcMessageTypes.StreamAck || messageType == RpcMessageTypes.StreamMessage)
-                    {
-                        ReceiveAck((StreamMessage) message,
-                            messageNumber);
-                    }
+                    ReceiveAck((StreamMessage) message, messageNumber);
                 }
-            };
+            }
+        }
+
+        private void OnTransportErrorEvent(string err)
+        {
+            CloseAll(new Exception(err));
+        }
+
+        private void OnTransportCloseEvent()
+        {
+            var err = new Exception("Transport closed while waiting the ACK");
+            CloseAll(err);
         }
 
         private void CloseAll(Exception err)
