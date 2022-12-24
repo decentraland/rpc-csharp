@@ -214,12 +214,13 @@ namespace rpc_csharp.protocol
                 }
             }
 
-            public async UniTask DisposeAsync()
+            public UniTask DisposeAsync()
             {
                 if (!closing && !closed)
                 {
                     Close();
                 }
+                return UniTask.CompletedTask;
             }
 
             public UniTask<bool> MoveNextAsync()
@@ -318,10 +319,11 @@ namespace rpc_csharp.protocol
                 this.enumerator = enumerator;
             }
 
-            public async UniTask DisposeAsync()
+            public UniTask DisposeAsync()
             {
                 isDisposed = true;
                 enumerator.Dispose();
+                return UniTask.CompletedTask;
             }
 
             public UniTask<bool> MoveNextAsync()

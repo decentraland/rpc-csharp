@@ -38,6 +38,8 @@ namespace rpc_csharp
         public uint portId { get; }
         public string portName { get; }
 
+        private bool disposed = false;
+
         public RpcServerPort(uint portId, string portName, CancellationToken ct)
         {
             this.portId = portId;
@@ -49,6 +51,10 @@ namespace rpc_csharp
 
         public void Close()
         {
+            if (disposed)
+                return;
+            disposed = true;
+
             loadedModules.Clear();
             procedures.Clear();
             serverStreamProcedures.Clear();
