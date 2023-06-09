@@ -40,6 +40,7 @@ namespace rpc_csharp
             {
                 port.Close();
             }
+
             ports.Clear();
 
             foreach (var transport in transportList)
@@ -182,38 +183,45 @@ namespace rpc_csharp
         public void AttachTransport(ITransport transport, TContext context)
         {
             var messageDispatcher = new MessageDispatcher(transport);
-            
+
             transportList.Add(transport);
-            
+
             messageDispatcher.OnParsedMessage += async (ParsedMessage parsedMessage) =>
             {
                 if (disposed)
                     return;
 
-                switch (parsedMessage.messageType)
+                try
                 {
-                    case RpcMessageTypes.CreatePort:
-                        HandleCreatePort((CreatePort)parsedMessage.message, parsedMessage.messageNumber, context,
-                            transport);
-                        break;
-                    case RpcMessageTypes.DestroyPort:
-                        HandleDestroyPort((DestroyPort)parsedMessage.message);
-                        break;
-                    case RpcMessageTypes.RequestModule:
-                        await HandleRequestModule((RequestModule)parsedMessage.message, parsedMessage.messageNumber,
-                            transport);
-                        break;
-                    case RpcMessageTypes.Request:
-                        await HandleRequest((Request)parsedMessage.message, parsedMessage.messageNumber, context,
-                            transport, messageDispatcher);
-                        break;
-                    case RpcMessageTypes.StreamAck:
-                    case RpcMessageTypes.StreamMessage:
-                        // noop
-                        break;
-                    default:
-                        Console.WriteLine("Not implemented message: " + parsedMessage.messageType);
-                        break;
+                    switch (parsedMessage.messageType)
+                    {
+                        case RpcMessageTypes.CreatePort:
+                            HandleCreatePort((CreatePort)parsedMessage.message, parsedMessage.messageNumber, context,
+                                transport);
+                            break;
+                        case RpcMessageTypes.DestroyPort:
+                            HandleDestroyPort((DestroyPort)parsedMessage.message);
+                            break;
+                        case RpcMessageTypes.RequestModule:
+                            await HandleRequestModule((RequestModule)parsedMessage.message, parsedMessage.messageNumber,
+                                transport);
+                            break;
+                        case RpcMessageTypes.Request:
+                            await HandleRequest((Request)parsedMessage.message, parsedMessage.messageNumber, context,
+                                transport, messageDispatcher);
+                            break;
+                        case RpcMessageTypes.StreamAck:
+                        case RpcMessageTypes.StreamMessage:
+                            // noop
+                            break;
+                        default:
+                            Console.WriteLine($"[rpc_csharp] Not implemented message: {parsedMessage.messageType}");
+                            break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"[rpc_csharp] Exception: {e.ToString()}");
                 }
             };
         }
