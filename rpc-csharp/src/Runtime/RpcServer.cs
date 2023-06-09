@@ -219,6 +219,10 @@ namespace rpc_csharp
                             break;
                     }
                 }
+                catch (OperationCanceledException _)
+                {
+                    // ignored
+                }
                 catch (Exception e)
                 {
                     Console.WriteLine($"[rpc_csharp] Exception: {e.ToString()}");
