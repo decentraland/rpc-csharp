@@ -12,7 +12,7 @@ namespace rpc_csharp.transport
         // Events
         event Action OnCloseEvent;
 
-        event Action<string> OnErrorEvent;
+        event Action<Exception> OnErrorEvent;
 
         event Action<byte[]> OnMessageEvent;
 

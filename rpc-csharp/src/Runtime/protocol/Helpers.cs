@@ -264,7 +264,7 @@ namespace rpc_csharp.protocol
                     }
                 });
 
-                var reject = new Action<Exception>(error => { ret.TrySetException(error); });
+                var reject = new Action<Exception>(error => ret.TrySetException(error));
 
                 settlers.AddLast(new Settler(accept, reject));
                 requestingNext(this, AsyncQueueActionType.Next);

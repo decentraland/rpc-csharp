@@ -14,7 +14,7 @@ public class WebSocketServerTransport : WebSocketBehavior, ITransport
     protected override void OnError(ErrorEventArgs e)
     {
         base.OnError(e);
-        OnErrorEvent?.Invoke(e.Message);
+        OnErrorEvent?.Invoke(e.Exception);
     }
 
     protected override void OnClose(CloseEventArgs e)
@@ -48,7 +48,7 @@ public class WebSocketServerTransport : WebSocketBehavior, ITransport
     }
 
     public event Action OnCloseEvent;
-    public event Action<string> OnErrorEvent;
+    public event Action<Exception> OnErrorEvent;
     public event Action<byte[]> OnMessageEvent;
     public event Action OnConnectEvent;
 }

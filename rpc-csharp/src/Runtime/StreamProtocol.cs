@@ -141,9 +141,9 @@ namespace rpc_csharp
                 dispatcher.transport.OnErrorEvent -= OnTransportErrorEvent;
             }
 
-            private void OnTransportErrorEvent(string s)
+            private void OnTransportErrorEvent(Exception exception)
             {
-                channel.Close(new InvalidOperationException("RPC Transport failed"));
+                channel.Close(new InvalidOperationException("RPC Transport failed", exception));
             }
 
             private void OnTransportCloseEvent()

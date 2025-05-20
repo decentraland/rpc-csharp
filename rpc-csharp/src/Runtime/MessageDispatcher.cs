@@ -24,17 +24,16 @@ namespace rpc_csharp
     public class MessageDispatcher : IDisposable
     {
         public static int ID = 0;
-        public int _id = 0;
+        public int id = 0;
         public event Action<ParsedMessage> OnParsedMessage;
 
-        private readonly Dictionary<string, (Action<StreamMessage>, Action<Exception>)> oneTimeCallbacks =
-            new Dictionary<string, (Action<StreamMessage>, Action<Exception>)>();
+        private readonly Dictionary<MessageKey, UniTaskCompletionSource<StreamMessage>> oneTimeCallbacks = new();
 
         public readonly ITransport transport;
 
         public MessageDispatcher(ITransport transport)
         {
-            _id = ++ID;
+            id = ++ID;
             this.transport = transport;
 
             transport.OnCloseEvent += OnTransportCloseEvent;
@@ -58,16 +57,16 @@ namespace rpc_csharp
                 var (messageType, message, messageNumber) = parsedMessage.Value;
                 OnParsedMessage?.Invoke(new ParsedMessage(messageType, message, messageNumber));
 
-                if (messageType == RpcMessageTypes.StreamAck || messageType == RpcMessageTypes.StreamMessage)
+                if (messageType is RpcMessageTypes.StreamAck or RpcMessageTypes.StreamMessage)
                 {
                     ReceiveAck((StreamMessage) message, messageNumber);
                 }
             }
         }
 
-        private void OnTransportErrorEvent(string err)
+        private void OnTransportErrorEvent(Exception err)
         {
-            CloseAll(new Exception(err));
+            CloseAll(err);
         }
 
         private void OnTransportCloseEvent()
@@ -83,7 +82,7 @@ namespace rpc_csharp
                 while (iterator.MoveNext())
                 {
                     // reject
-                    iterator.Current.Item2(err);
+                    iterator.Current.TrySetException(err);
                 }
             }
 
@@ -92,28 +91,55 @@ namespace rpc_csharp
 
         private void ReceiveAck(StreamMessage data, uint messageNumber)
         {
-            var key = $"{messageNumber},{data.SequenceId}";
+            var key = new MessageKey(messageNumber, data.SequenceId);
             if (oneTimeCallbacks.TryGetValue(key, out var fut))
             {
                 oneTimeCallbacks.Remove(key);
-                fut.Item1(data);
+                fut.TrySetResult(data);
             }
         }
 
         public UniTask<StreamMessage> SendStreamMessage(StreamMessage data)
         {
             var (_, messageNumber) = ProtocolHelpers.ParseMessageIdentifier(data.MessageIdentifier);
-            var key = $"{messageNumber},{data.SequenceId}";
-
-            // C# Promiches
+            var key = new MessageKey(messageNumber, data.SequenceId);
+            
             var ret = new UniTaskCompletionSource<StreamMessage>();
-            var accept = new Action<StreamMessage>(message => { ret.TrySetResult(message); });
-            var reject = new Action<Exception>(error => { ret.TrySetException(error); });
-            oneTimeCallbacks.Add(key, (accept, reject));
+            oneTimeCallbacks.Add(key, ret);
 
             transport.SendMessage(data.ToByteArray());
 
             return ret.Task;
+        }
+        
+        internal readonly struct MessageKey : IEquatable<MessageKey>
+        {
+            internal readonly uint messageNumber;
+            internal readonly uint sequenceId;
+
+            public MessageKey(uint messageNumber, uint sequenceId)
+            {
+                this.messageNumber = messageNumber;
+                this.sequenceId = sequenceId;
+            }
+
+            public bool Equals(MessageKey other)
+            {
+                return messageNumber == other.messageNumber && sequenceId == other.sequenceId;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is MessageKey other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    return ((int)messageNumber * 397) ^ (int)sequenceId;
+                }
+            }
         }
     }
 }
