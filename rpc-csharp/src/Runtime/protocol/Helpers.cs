@@ -8,35 +8,14 @@ namespace rpc_csharp.protocol
 {
     public static class ProtocolHelpers
     {
-        public static byte[] RequestMessage(uint messageNumber, uint portId, uint procedureId,
-            ByteString payload = null)
+        public static Request ClientStreamRequestMessage(uint portId, uint procedureId)
         {
-            return new Request()
+            return new Request
             {
-                MessageIdentifier = CalculateMessageIdentifier(
-                    RpcMessageTypes.Request,
-                    messageNumber
-                ),
                 PortId = portId,
                 ProcedureId = procedureId,
-                Payload = payload ?? ByteString.Empty,
-            }.ToByteArray();
-        }
-
-        public static byte[] RequestMessageClientStream(uint messageNumber, uint portId, uint procedureId,
-            uint clientStream, ByteString payload = null)
-        {
-            return new Request()
-            {
-                MessageIdentifier = CalculateMessageIdentifier(
-                    RpcMessageTypes.Request,
-                    messageNumber
-                ),
-                PortId = portId,
-                ProcedureId = procedureId,
-                Payload = payload ?? ByteString.Empty,
-                ClientStream = clientStream
-            }.ToByteArray();
+                Payload = ByteString.Empty,
+            };
         }
 
         public static byte[] CloseStreamMessage(uint messageNumber, uint sequenceId, uint portId)
@@ -85,7 +64,7 @@ namespace rpc_csharp.protocol
             return (((uint)messageType & 0xf) << 27) | (messageNumber & 0x07ffffff);
         }
 
-        public static (RpcMessageTypes, object, uint)? ParseProtocolMessage(byte[] data)
+        public static (RpcMessageTypes, IMessage, uint)? ParseProtocolMessage(byte[] data)
         {
             var header = RpcMessageHeader.Parser.ParseFrom(data);
             var (messageType, messageNumber) = ParseMessageIdentifier(header.MessageIdentifier);
@@ -136,6 +115,15 @@ namespace rpc_csharp.protocol
         }
 
         public delegate T Parser<out T>(ByteString payload);
+
+        public static IUniTaskAsyncEnumerable<T> DeserializeMessageEnumerator<T>(
+            IUniTaskAsyncEnumerable<ByteString> generator) where T : IMessage, new() =>
+            DeserializeMessageEnumerator(generator, static payload =>
+            {
+                var result = new T();
+                result.MergeFrom(payload);
+                return result;
+            });
 
         public static IUniTaskAsyncEnumerable<T> DeserializeMessageEnumerator<T>(
             IUniTaskAsyncEnumerable<ByteString> generator, Parser<T> parseFunc)

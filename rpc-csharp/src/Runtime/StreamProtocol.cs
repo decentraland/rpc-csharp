@@ -9,7 +9,10 @@ namespace rpc_csharp
 {
     public class StreamProtocol
     {
-        public static async UniTask SendStreamThroughTransport(MessageDispatcher messageDispatcher, ITransport transport, uint messageNumber,
+        /// <summary>
+        /// Keeps sending stream messages until the stream is closed or canceled
+        /// </summary>
+        public static async UniTask SendStreamThroughTransportLoop(MessageDispatcher messageDispatcher, ITransport transport, uint messageNumber,
             uint portId,
             IUniTaskAsyncEnumerable<ByteString> stream)
         {
@@ -48,6 +51,7 @@ namespace rpc_csharp
                 }
             }
 
+            // TODO this point won't be reached if `await messageDispatcher.SendStreamMessage` has thrown an exception
             transport.SendMessage(ProtocolHelpers.CloseStreamMessage(messageNumber, sequenceNumber, portId));
         }
 
@@ -82,32 +86,12 @@ namespace rpc_csharp
                 if (!ret.Ack) throw new Exception("Error in logic, ACK must be true");
             }
 
-            await SendStreamThroughTransport(messageDispatcher, transport, messageNumber, portId, stream);
+            await SendStreamThroughTransportLoop(messageDispatcher, transport, messageNumber, portId, stream);
         }
 
         public static IUniTaskAsyncEnumerable<ByteString> HandleServerStream(MessageDispatcher dispatcher, uint messageNumber, uint portId)
         {
             return new StreamFromDispatcher(dispatcher, messageNumber, portId, true);
-        }
-        
-        public static async UniTask HandleClientStream(MessageDispatcher dispatcher, uint messageNumber, uint portId, IUniTaskAsyncEnumerable<ByteString> requestStream)
-        {
-            // Wait for open stream
-            UniTaskCompletionSource responseFuture = new UniTaskCompletionSource();
-
-            void OnParsedMessage(ParsedMessage parsedMessage)
-            {
-                if (parsedMessage.messageNumber == messageNumber)
-                {
-                    responseFuture.TrySetResult();
-                    dispatcher.OnParsedMessage -= OnParsedMessage;
-                }
-            }
-
-            dispatcher.OnParsedMessage += OnParsedMessage;
-            
-            await responseFuture.Task;
-            await SendStreamThroughTransport(dispatcher, dispatcher.transport, messageNumber, portId, requestStream);
         }
 
         public class StreamFromDispatcher : IUniTaskAsyncEnumerable<ByteString>, IDisposable
@@ -172,9 +156,11 @@ namespace rpc_csharp
 
             private void OnProcessMessage(ParsedMessage parsedMessage)
             {
-                if (parsedMessage.messageNumber == messageNumber)
+                if (parsedMessage.messageNumber != messageNumber) return;
+                
+                switch (parsedMessage.messageType)
                 {
-                    if (parsedMessage.messageType == RpcMessageTypes.StreamMessage)
+                    case RpcMessageTypes.StreamMessage:
                     {
                         if (parsedMessage.message is StreamMessage streamMessage)
                         {
@@ -191,17 +177,18 @@ namespace rpc_csharp
                                 }
                             }
                         }
+
+                        break;
                     }
-                    else if (parsedMessage.messageType == RpcMessageTypes.RemoteErrorResponse)
-                    {
+                    case RpcMessageTypes.RemoteErrorResponse:
                         isRemoteClosed = true;
                         channel.Close(new InvalidOperationException("RemoteError: " +
                                                                     ((parsedMessage.message as RemoteError)
                                                                         ?.ErrorMessage ?? "Unknown remote error")));
-                    } else
-                    {
-                        channel.Close(new InvalidOperationException("RemoteError: Protocol error, unkown message"));
-                    }
+                        break;
+                    default:
+                        channel.Close(new InvalidOperationException($"RemoteError: Protocol error, unkown message {parsedMessage.messageType}"));
+                        break;
                 }
             }
 

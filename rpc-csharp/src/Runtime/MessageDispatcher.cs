@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Google.Protobuf;
@@ -10,10 +11,10 @@ namespace rpc_csharp
     public readonly struct ParsedMessage
     {
         public readonly RpcMessageTypes messageType;
-        public readonly object message;
+        public readonly IMessage message;
         public readonly uint messageNumber;
 
-        public ParsedMessage(RpcMessageTypes messageType, object message, uint messageNumber)
+        public ParsedMessage(RpcMessageTypes messageType, IMessage message, uint messageNumber)
         {
             this.messageType = messageType;
             this.message = message;
@@ -27,9 +28,9 @@ namespace rpc_csharp
         public int id = 0;
         public event Action<ParsedMessage> OnParsedMessage;
 
-        private readonly Dictionary<MessageKey, UniTaskCompletionSource<StreamMessage>> oneTimeCallbacks = new();
+        private readonly ConcurrentDictionary<StreamMessageKey, UniTaskCompletionSource<StreamMessage>> pendingStreams = new();
 
-        public readonly ITransport transport;
+        internal readonly ITransport transport;
 
         public MessageDispatcher(ITransport transport)
         {
@@ -55,14 +56,21 @@ namespace rpc_csharp
             if (parsedMessage != null)
             {
                 var (messageType, message, messageNumber) = parsedMessage.Value;
-                OnParsedMessage?.Invoke(new ParsedMessage(messageType, message, messageNumber));
 
                 if (messageType is RpcMessageTypes.StreamAck or RpcMessageTypes.StreamMessage)
                 {
-                    ReceiveAck((StreamMessage) message, messageNumber);
+                    ReceiveStreamAck((StreamMessage) message, messageNumber);
                 }
+
+                var result = new ParsedMessage(messageType, message, messageNumber);
+                OnMessageParsed(result);
+                OnParsedMessage?.Invoke(result);
             }
         }
+        
+        protected virtual void OnMessageParsed(ParsedMessage parsedMessage) { }
+        
+        protected virtual void OnClose(Exception e) { }
 
         private void OnTransportErrorEvent(Exception err)
         {
@@ -77,60 +85,55 @@ namespace rpc_csharp
 
         private void CloseAll(Exception err)
         {
-            using (var iterator = oneTimeCallbacks.Values.GetEnumerator())
-            {
-                while (iterator.MoveNext())
-                {
-                    // reject
-                    iterator.Current.TrySetException(err);
-                }
-            }
+            // Reject streams
+            
+            foreach (var promise in pendingStreams.Values)
+                promise.TrySetException(err);
 
-            oneTimeCallbacks.Clear();
+            pendingStreams.Clear();
+            
+            OnClose(err);
         }
 
-        private void ReceiveAck(StreamMessage data, uint messageNumber)
+        private void ReceiveStreamAck(StreamMessage data, uint messageNumber)
         {
-            var key = new MessageKey(messageNumber, data.SequenceId);
-            if (oneTimeCallbacks.TryGetValue(key, out var fut))
-            {
-                oneTimeCallbacks.Remove(key);
+            var key = new StreamMessageKey(messageNumber, data.SequenceId);
+            if (pendingStreams.TryRemove(key, out var fut))
                 fut.TrySetResult(data);
-            }
         }
 
         public UniTask<StreamMessage> SendStreamMessage(StreamMessage data)
         {
             var (_, messageNumber) = ProtocolHelpers.ParseMessageIdentifier(data.MessageIdentifier);
-            var key = new MessageKey(messageNumber, data.SequenceId);
+            var key = new StreamMessageKey(messageNumber, data.SequenceId);
             
             var ret = new UniTaskCompletionSource<StreamMessage>();
-            oneTimeCallbacks.Add(key, ret);
+            pendingStreams.TryAdd(key, ret);
 
             transport.SendMessage(data.ToByteArray());
 
             return ret.Task;
         }
         
-        internal readonly struct MessageKey : IEquatable<MessageKey>
+        internal readonly struct StreamMessageKey : IEquatable<StreamMessageKey>
         {
             internal readonly uint messageNumber;
             internal readonly uint sequenceId;
 
-            public MessageKey(uint messageNumber, uint sequenceId)
+            public StreamMessageKey(uint messageNumber, uint sequenceId)
             {
                 this.messageNumber = messageNumber;
                 this.sequenceId = sequenceId;
             }
 
-            public bool Equals(MessageKey other)
+            public bool Equals(StreamMessageKey other)
             {
                 return messageNumber == other.messageNumber && sequenceId == other.sequenceId;
             }
 
             public override bool Equals(object obj)
             {
-                return obj is MessageKey other && Equals(other);
+                return obj is StreamMessageKey other && Equals(other);
             }
 
             public override int GetHashCode()
