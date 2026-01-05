@@ -4,8 +4,6 @@ rpc-csharp is a implementation of https://github.com/decentraland/rpc in C#
 
 Progress tracking in https://github.com/decentraland/sdk/issues/321
 
-The RPC Client is not implemented because it was not needed.
-
 # Dependencies
 
 - protoc (3.12 or later)

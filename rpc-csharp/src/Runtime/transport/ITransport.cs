@@ -1,11 +1,18 @@
 using System;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 
 namespace rpc_csharp.transport
 {
     public interface ITransport : IDisposable
     {
         // Functions
-        void SendMessage(byte[] data);
+        UniTask SendMessageAsync(byte[] data, CancellationToken ct);
+
+        /// <summary>
+        /// Send and Forget
+        /// </summary>
+        void SendMessage(byte[] data) => SendMessageAsync(data, CancellationToken.None).Forget();
 
         void Close();
         
