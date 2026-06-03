@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 
 namespace rpc_csharp.transport
@@ -28,29 +29,15 @@ namespace rpc_csharp.transport
             this.sender = sender;
         }
 
-        public Action<byte[]> GetOnMessageEvent()
+        public UniTask SendMessageAsync(byte[] data, CancellationToken cancellationToken)
         {
-            return OnMessageEvent;
-        }
-
-        public Action GetOnCloseEvent()
-        {
-            return OnCloseEvent;
-        }
-
-        public void SendMessage(byte[] data)
-        {
-            // Decouple
-            UniTask.Create(() =>
-            {
-                sender.GetOnMessageEvent().Invoke(data);
-                return UniTask.CompletedTask;
-            });
+            sender.OnMessageEvent?.Invoke(data);
+            return UniTask.CompletedTask;
         }
 
         public void Close()
         {
-            sender.GetOnCloseEvent().Invoke();
+            sender.OnCloseEvent?.Invoke();
         }
         public void Dispose()
         {

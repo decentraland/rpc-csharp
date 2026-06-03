@@ -9,6 +9,9 @@ namespace rpc_csharp
 {
     public class ClientRequestDispatcher : MessageDispatcher
     {
+        public event Action<IRpcMessage, uint> RequestResponseStarted;
+        public event Action<IMessage, uint> RequestResponseFinished; 
+        
         // It doesn't feel right to preserve this number if the RPCClient has been recreated along with all its dependencies.
         private static uint globalMessageNumber = 0;
         
@@ -75,8 +78,6 @@ namespace rpc_csharp
             
             negotiationMessage.ClientStream = clientStreamMessageNumber;
             
-            
-            
             // When the client stream has finished, Server will send the last element as an acknowledgment
             var lastElementAck = new UniTaskCompletionSource<ParsedMessage>();
             pendingMessages.TryAdd(requestMessageNumber, lastElementAck);
@@ -130,12 +131,16 @@ namespace rpc_csharp
             var promise = new UniTaskCompletionSource<ParsedMessage>();
             pendingMessages.TryAdd(requestMessageNumber, promise);
             
+            RequestResponseStarted?.Invoke(request, requestMessageNumber);
+            
             // TODO: find an opportunity to avoid such allocation
             var payload = request.ToByteArray();
             
             transport.SendMessage(payload);
             // Failure will be resolved in `OnClose`
             var parsedMessage = await promise.Task;
+            
+            RequestResponseFinished?.Invoke(parsedMessage.message, requestMessageNumber);
 
             if (parsedMessage.message == null)
                 throw new Exception($"\"Null\" response was received for request {request.GetType().Name}, message number {requestMessageNumber}");
